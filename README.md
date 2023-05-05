@@ -1,4 +1,4 @@
-# Wao Abo Bot
+# We.aRe.oNe Abo Bot
 Telegrambot zum abonnieren von DJs der We.aRe.oNe Sendegruppe
 
 # Benötigte Packages
