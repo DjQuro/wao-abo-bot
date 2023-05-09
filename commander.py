@@ -316,8 +316,8 @@ def checksubs(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.error('Update "%s" caused error "%s"', update, context.error)
-    encoded_message = urllib.parse.quote('Update "%s" caused error "%s"', update, context.error)
-    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={encoded_message}"
+    message = f'Update "{update}" caused error "{context.error}"'
+    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
     requests.get(content)
 
 
