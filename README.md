@@ -7,8 +7,7 @@ Featurerequests und Fehler bitte über die Issue Funktion melden.
 
 # Benötigte Packages (Self-Hosting)
 ```bash
-pip install Requests
-pip install python-telegram-bot
+pip install -r Requirements.txt
 ```
 
 # Commands
