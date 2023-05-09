@@ -10,7 +10,7 @@ import urllib.parse
 from datetime import datetime
 
 import requests
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -85,38 +85,101 @@ def announce(update, context):
 def setTime(update, context):
     id = str(update.effective_chat.id)
     minutes = " ".join(context.args)
-    userConfig = f"data/{id}/config.json"
-    f = open(userConfig, 'w+')
-    f.write('{"minInfo": ' + minutes + '}')
-    f.close()
 
-
+    if update.message.chat.type == "group" or update.message.chat.type == "supergroup":
+        user_id = update.message.from_user.id
+        chat_id = update.message.chat_id
+        user = context.bot.get_chat_member(chat_id, user_id)
+        if user.status in ["administrator", "creator"]:
+            if minutes:
+                userConfig = f"data/{id}/config.json"
+                f = open(userConfig, 'w+')
+                f.write('{"minInfo": ' + minutes + '}')
+                f.close()
+                update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
+            else:
+                with open(f"data/{id}/config.json") as userConfig:
+                    json_string = userConfig.read()
+                conf = json.loads(json_string)
+                update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
+        else:
+            if minutes:
+                update.message.reply_text(f"Du bist kein Gruppenadmin")
+            else:
+                with open(f"data/{id}/config.json") as userConfig:
+                    json_string = userConfig.read()
+                conf = json.loads(json_string)
+                update.message.reply_text(f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
+    else:
+        if minutes:
+            userConfig = f"data/{id}/config.json"
+            f = open(userConfig, 'w+')
+            f.write('{"minInfo": ' + minutes + '}')
+            f.close()
+            update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
+        else:
+            with open(f"data/{id}/config.json") as userConfig:
+                json_string = userConfig.read()
+            conf = json.loads(json_string)
+            update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
 def start(update, context):
     id = str(update.effective_chat.id)
-    logger.info(f"Welcoming {id}")
-    os.mkdir(f"data/{id}")
-    logger.info(f"Creating data/{id}")
-    subfile = f"data/{id}/subs.json"
-    f = open(subfile, 'w+')
-    f.write('{"subscriptions": []}')
-    f.close()
-    logger.info(f"Creating data/{id}/subs.json")
-    cachefile = f"data/{id}/cache.json"
-    f = open(cachefile, 'w+')
-    f.write('{"sent": []}')
-    f.close()
-    logger.info(f"Creating data/{id}/cache.json")
-    configfile = f"data/{id}/config.json"
-    f = open(configfile, 'w+')
-    f.write('{"minInfo": ' + config["defaultTime"] + '}')
-    f.close()
-    logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-    logger.info(f"READY!")
-    context.bot.send_message(chat_id=id,
+    if update.message.chat.type == "group" or update.message.chat.type == "supergroup":
+        user_id = update.message.from_user.id
+        chat_id = update.message.chat_id
+        user = context.bot.get_chat_member(chat_id, user_id)
+        if user.status in ["administrator", "creator"]:
+            logger.info(f"Welcoming {id}")
+            os.mkdir(f"data/{id}")
+            logger.info(f"Creating data/{id}")
+            subfile = f"data/{id}/subs.json"
+            f = open(subfile, 'w+')
+            f.write('{"subscriptions": []}')
+            f.close()
+            logger.info(f"Creating data/{id}/subs.json")
+            cachefile = f"data/{id}/cache.json"
+            f = open(cachefile, 'w+')
+            f.write('{"sent": []}')
+            f.close()
+            logger.info(f"Creating data/{id}/cache.json")
+            configfile = f"data/{id}/config.json"
+            f = open(configfile, 'w+')
+            f.write('{"minInfo": ' + config["defaultTime"] + '}')
+            f.close()
+            logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+            logger.info(f"READY!")
+            context.bot.send_message(chat_id=id,
                              text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                   f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
                                   f"Beispiel: /subscribe Quro \n\r\n\r "
                                   f"Der Name muss wie bei WAO auf der Website geschrieben sein")
+        else:
+            update.message.reply_text(f"Du bist kein Gruppenadmin")
+    else:
+        logger.info(f"Welcoming {id}")
+        os.mkdir(f"data/{id}")
+        logger.info(f"Creating data/{id}")
+        subfile = f"data/{id}/subs.json"
+        f = open(subfile, 'w+')
+        f.write('{"subscriptions": []}')
+        f.close()
+        logger.info(f"Creating data/{id}/subs.json")
+        cachefile = f"data/{id}/cache.json"
+        f = open(cachefile, 'w+')
+        f.write('{"sent": []}')
+        f.close()
+        logger.info(f"Creating data/{id}/cache.json")
+        configfile = f"data/{id}/config.json"
+        f = open(configfile, 'w+')
+        f.write('{"minInfo": ' + config["defaultTime"] + '}')
+        f.close()
+        logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        logger.info(f"READY!")
+        context.bot.send_message(chat_id=id,
+                                 text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                      f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
+                                      f"Beispiel: /subscribe Quro \n\r\n\r "
+                                      f"Der Name muss wie bei WAO auf der Website geschrieben sein")
 
 
 def subscription(update, context):
@@ -250,6 +313,10 @@ def checksubs(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.error('Update "%s" caused error "%s"', update, context.error)
+    encoded_message = urllib.parse.quote('Update "%s" caused error "%s"', update, context.error)
+    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={encoded_message}"
+    requests.get(content)
+
 
 
 checkUpdate()
