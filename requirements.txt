@@ -16,7 +16,6 @@ ConfigArgParse==1.5.3
 configobj==5.0.6
 constantly==15.1.0
 cryptography==3.4.8
-dbus-python==1.2.18
 h11==0.14.0
 httpcore==0.16.3
 httplib2==0.20.2
