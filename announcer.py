@@ -50,7 +50,7 @@ def checkUpdate():
 
 
 # Senderfunction for public announce
-def telegram_public_message(message):
+def telegram_public_message(message, chatid):
     encoded_message = urllib.parse.quote(message)
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
     requests.get(content)
