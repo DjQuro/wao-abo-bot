@@ -103,7 +103,7 @@ def setTime(update, context):
                 update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
         else:
             if minutes:
-                update.message.reply_text(f"Du bist kein Gruppenadmin")
+                update.message.reply_text("Du bist kein Gruppenadmin")
             else:
                 with open(f"data/{id}/config.json") as userConfig:
                     json_string = userConfig.read()
@@ -149,14 +149,14 @@ def start(update, context):
             f.write('{"minInfo": ' + config["defaultTime"] + '}')
             f.close()
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-            logger.info(f"READY!")
+            logger.info("READY!")
             context.bot.send_message(chat_id=id,
                                      text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                           "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
                                           "Beispiel: /subscribe Quro \n\r\n\r "
                                           "Der Name muss wie bei WAO auf der Website geschrieben sein")
         else:
-            update.message.reply_text(f"Du bist kein Gruppenadmin")
+            update.message.reply_text("Du bist kein Gruppenadmin")
     else:
         logger.info(f"Welcoming {id}")
         os.mkdir(f"data/{id}")
@@ -176,7 +176,7 @@ def start(update, context):
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-        logger.info(f"READY!")
+        logger.info("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                       "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
