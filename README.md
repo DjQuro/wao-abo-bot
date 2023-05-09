@@ -1,3 +1,4 @@
+[![Python application](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml)
 # We.aRe.oNe Abo Bot
 Telegrambot zum abonnieren von DJs der We.aRe.oNe Sendegruppe
 
