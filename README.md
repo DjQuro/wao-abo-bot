@@ -19,7 +19,11 @@ pip install python-telegram-bot
 | /unsubscribe  | Ein Abo beenden. Schreibe den Namen des DJs wie in der WAO App  | /unsubscribe Quro  |
 
 # Config
-In der Config unter bot_token den Bot Token angeben
+In der Config unter bot_token den Bot Token angeben. Zudem wird für die Verwendung eine AdminID benötigt. Das ist die ChatID des Chats zwischen dem Admin und dem Bot.
 
 # Ausschluss von Sendern
 Ist ein Sender im Bot nicht gewünscht, kann dieser aus der stations.json entfernt werden
+
+# Wo funktioniert der Bot?
+Der Bot funktioniert im Privatchat sowie in Gruppen und Supergruppen (Achtung! In Gruppen können /time und /start NUR von Gruppenadmins ausgeführt werden)
+Als Ankündigungsbot in einem Channel ist dieser Bot leider nicht nutzbar! Hierfür kann mein Announcer-Bot aus meinem anderen Repository gezogen werden (folgt)
