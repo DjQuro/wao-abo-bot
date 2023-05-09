@@ -16,6 +16,17 @@ with open("versions.json") as versionfile:
 versions = json.loads(version_string)
 versionfile.close()
 
+with open("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
+    rem_version_string = remoteVersion.read()
+remoteVersion = json.loads(rem_version_string)
+remoteVersion.close()
+
+if versions['announcer'] == remoteVersions['announcer']:
+    logger.info(f"Installed Commander-Version: {versions['announcer']} - Up to Date!")
+else:
+    logger.info(
+        f"Installed Commander-Version: {versions['announcer']} - Please Update! (New Version: {versions['announcer']})")
+
 with open("config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
@@ -42,9 +53,6 @@ def telegram_public_message(message):
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
     requests.get(content)
 
-
-logger.info(f"Commander-Version: {versions['commander']}")
-logger.info(f"Announcer-Version: {versions['announcer']}")
 
 # Create the base URL string
 with open("stations.json") as f:
@@ -119,7 +127,8 @@ def check():
                         if x["m"] in subs["subscriptions"] and x["s"] // 1000 > now:
                             uid = x["mi"] + x["s"] + x["e"]
                             if 900 >= startOffset and uid not in sent:
-                                message=(f"⏰📣 Die Show {show} von {dj} auf {station} startet am {startTime}🎙️ #weareone!")
+                                message = (
+                                    f"⏰📣 Die Show {show} von {dj} auf {station} startet am {startTime}🎙️ #weareone!")
                                 encoded_message = urllib.parse.quote(message)
                                 content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
                                 requests.get(content)
@@ -134,6 +143,7 @@ def check():
 
                 else:
                     logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
+
 
 while True:
     check()
