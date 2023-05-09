@@ -125,9 +125,6 @@ def check():
                         startTime = datetime.fromtimestamp(startUnix).strftime(
                             "%d.%m.%Y um %H:%M"
                         )
-                        endTime = datetime.fromtimestamp(endUnix).strftime(
-                            "%H:%M"
-                        )
                         startOffset = startUnix - now
 
                         if x["m"] in subs["subscriptions"] and x["s"] // 1000 > now:

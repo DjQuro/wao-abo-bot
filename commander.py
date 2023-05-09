@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import json
 import logging
 import os
@@ -10,7 +9,7 @@ import urllib.parse
 from datetime import datetime
 
 import requests
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -48,7 +47,7 @@ def checkUpdate():
         logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
     else:
         logger.info(
-            f"Installed Commander-Version: {versions['commander']} - Please Update! (New Version: {remoteVersion['commander']})")
+            f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
 
 
 def main():
@@ -152,10 +151,10 @@ def start(update, context):
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
             logger.info(f"READY!")
             context.bot.send_message(chat_id=id,
-                                     text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                          f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                          f"Beispiel: /subscribe Quro \n\r\n\r "
-                                          f"Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                     text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                          "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
+                                          "Beispiel: /subscribe Quro \n\r\n\r "
+                                          "Der Name muss wie bei WAO auf der Website geschrieben sein")
         else:
             update.message.reply_text(f"Du bist kein Gruppenadmin")
     else:
@@ -179,10 +178,10 @@ def start(update, context):
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
         logger.info(f"READY!")
         context.bot.send_message(chat_id=id,
-                                 text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                      f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                      f"Beispiel: /subscribe Quro \n\r\n\r "
-                                      f"Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                 text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                      "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
+                                      "Beispiel: /subscribe Quro \n\r\n\r "
+                                      "Der Name muss wie bei WAO auf der Website geschrieben sein")
 
 
 def subscription(update, context):
@@ -231,7 +230,7 @@ def unsubscribe(update, context):
             logger.warning(
                 f"{update.message.from_user.username} versucht {dj} in {id} zu deabonnieren ohne {dj} je abonniert zu haben!")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Auf welchen DJ hast du keinen Bock mehr?")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Auf welchen DJ hast du keinen Bock mehr?")
         logger.error(f"{update.message.from_user.username} versuchte jemanden in {id} zu deabonnieren aber scheiterte.")
 
 
@@ -285,7 +284,6 @@ def checksubs(update, context):
         endpoint_url = base_url.format(station=id)
 
         now = time.time()
-        current_time = datetime.fromtimestamp(now).strftime("%d.%m.%Y %H:%M")
         # Send a GET request to the generated Endpoint
         response = requests.get(endpoint_url)
         # Check the response status code
@@ -310,7 +308,7 @@ def checksubs(update, context):
     s.close()
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
-                                 text=f"In den nächsten 15 Minuten beginnen keine Shows!")
+                                 text="In den nächsten 15 Minuten beginnen keine Shows!")
 
 
 def error(update, context):
