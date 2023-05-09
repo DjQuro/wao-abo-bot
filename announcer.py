@@ -16,17 +16,6 @@ with open("versions.json") as versionfile:
 versions = json.loads(version_string)
 versionfile.close()
 
-with open("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-    rem_version_string = remoteVersion.read()
-remoteVersion = json.loads(rem_version_string)
-remoteVersion.close()
-
-if versions['announcer'] == remoteVersions['announcer']:
-    logger.info(f"Installed Commander-Version: {versions['announcer']} - Up to Date!")
-else:
-    logger.info(
-        f"Installed Commander-Version: {versions['announcer']} - Please Update! (New Version: {versions['announcer']})")
-
 with open("config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
@@ -45,6 +34,19 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(stdout_handler)
+
+
+def checkUpdate():
+    with urllib.request.urlopen(
+            "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
+        rem_version_string = remoteVersion.read()
+        remoteVersion = json.loads(rem_version_string)
+
+    if versions['announcer'] == remoteVersion['announcer']:
+        logger.info(f"Installed Announcer-Version: {versions['announcer']} - Up to Date!")
+    else:
+        logger.info(
+            f"Installed Announcer-Version: {versions['announcer']} - Please Update! (New Version: {remoteVersion['announcer']})")
 
 
 # Senderfunction for public announce
@@ -145,6 +147,7 @@ def check():
                     logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
 
 
+checkUpdate()
 while True:
     check()
     time.sleep(60)

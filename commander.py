@@ -37,15 +37,18 @@ with open("versions.json") as versionfile:
 versions = json.loads(version_string)
 versionfile.close()
 
-with open("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-    rem_version_string = remoteVersion.read()
-remoteVersion = json.loads(rem_version_string)
-remoteVersion.close()
-if versions['commander'] == remoteVersions['commander']:
-    logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
-else:
-    logger.info(
-        f"Installed Commander-Version: {versions['commander']} - Please Update! (New Version: {versions['commander']})")
+
+def checkUpdate():
+    with urllib.request.urlopen(
+            "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
+        rem_version_string = remoteVersion.read()
+        remoteVersion = json.loads(rem_version_string)
+
+    if versions['commander'] == remoteVersion['commander']:
+        logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
+    else:
+        logger.info(
+            f"Installed Commander-Version: {versions['commander']} - Please Update! (New Version: {remoteVersion['commander']})")
 
 
 def main():
@@ -217,4 +220,5 @@ def error(update, context):
     logger.error('Update "%s" caused error "%s"', update, context.error)
 
 
+checkUpdate()
 main()
