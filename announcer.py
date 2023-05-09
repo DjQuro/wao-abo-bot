@@ -79,6 +79,10 @@ def check():
             with open(f"data/{chatid}/subs.json") as s:
                 sub_string = s.read()
             subs = json.loads(sub_string)
+            with open(f"data/{chatid}/config.json") as c:
+                conf_string = c.read()
+            chatConfig = json.loads(conf_string)
+            minTime = chatConfig['minInfo'] // 60
             # Iterate over the stations in the dictionary
             for station, id in stations.items():
                 # Use string formatting to insert the station ID into the URL
@@ -128,7 +132,7 @@ def check():
 
                         if x["m"] in subs["subscriptions"] and x["s"] // 1000 > now:
                             uid = x["mi"] + x["s"] + x["e"]
-                            if 900 >= startOffset and uid not in sent:
+                            if minTime >= startOffset and uid not in sent:
                                 message = (
                                     f"⏰📣 Die Show {show} von {dj} auf {station} startet am {startTime}🎙️ #weareone!")
                                 encoded_message = urllib.parse.quote(message)
