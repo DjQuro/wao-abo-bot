@@ -82,7 +82,7 @@ def check():
             with open(f"data/{chatid}/config.json") as c:
                 conf_string = c.read()
             chatConfig = json.loads(conf_string)
-            minTime = chatConfig['minInfo'] // 60
+            minTime = chatConfig['minInfo'] * 60
             # Iterate over the stations in the dictionary
             for station, id in stations.items():
                 # Use string formatting to insert the station ID into the URL
