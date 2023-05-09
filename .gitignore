@@ -163,3 +163,4 @@ data/*/*.json
 config.json
 stations.json
 /data/Datastore.txt
+*.log
