@@ -59,9 +59,36 @@ def main():
     dp.add_handler(CommandHandler('unsubscribe', unsubscribe))
     dp.add_handler(CommandHandler('subscribe', subscribe))
     dp.add_handler(CommandHandler('next', checksubs))
+    dp.add_handler(CommandHandler('time', setTime))
+    dp.add_handler(CommandHandler('announce', announce))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
+
+
+def announce(update, context):
+    id = str(update.effective_chat.id)
+    if id == config["adminID"]:
+        message = " ".join(context.args)
+        rootdir = 'data'
+        for rootdir, dirs, files in os.walk(rootdir):
+            for subdir in dirs:
+                chatid = os.path.join(subdir)
+                encoded_message = urllib.parse.quote(message)
+                content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
+                requests.get(content)
+        update.message.reply_text("Ankündigung an alle Nutzer gesendet!")
+    else:
+        update.message.reply_text("Du hast keine Berechtigung dazu!")
+
+
+def setTime(update, context):
+    id = str(update.effective_chat.id)
+    minutes = " ".join(context.args)
+    userConfig = f"data/{id}/config.json"
+    f = open(userConfig, 'w+')
+    f.write('{"minInfo": ' + minutes + '}')
+    f.close()
 
 
 def start(update, context):
@@ -79,6 +106,11 @@ def start(update, context):
     f.write('{"sent": []}')
     f.close()
     logger.info(f"Creating data/{id}/cache.json")
+    configfile = f"data/{id}/config.json"
+    f = open(configfile, 'w+')
+    f.write('{"minInfo": ' + config["defaultTime"] + '}')
+    f.close()
+    logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
     logger.info(f"READY!")
     context.bot.send_message(chat_id=id,
                              text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "

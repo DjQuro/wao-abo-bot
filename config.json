@@ -1,3 +1,5 @@
 {
-	"bot_token":"<yourbottokenhere>"
+	"bot_token":"<yourbottokenhere>",
+	"defaultTime": 15,
+	"adminID": "318491860"
 }
