@@ -109,7 +109,8 @@ def setTime(update, context):
                 with open(f"data/{id}/config.json") as userConfig:
                     json_string = userConfig.read()
                 conf = json.loads(json_string)
-                update.message.reply_text(f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
+                update.message.reply_text(
+                    f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
     else:
         if minutes:
             userConfig = f"data/{id}/config.json"
@@ -122,6 +123,8 @@ def setTime(update, context):
                 json_string = userConfig.read()
             conf = json.loads(json_string)
             update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
+
+
 def start(update, context):
     id = str(update.effective_chat.id)
     if update.message.chat.type == "group" or update.message.chat.type == "supergroup":
@@ -149,10 +152,10 @@ def start(update, context):
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
             logger.info(f"READY!")
             context.bot.send_message(chat_id=id,
-                             text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                  f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                  f"Beispiel: /subscribe Quro \n\r\n\r "
-                                  f"Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                     text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                          f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
+                                          f"Beispiel: /subscribe Quro \n\r\n\r "
+                                          f"Der Name muss wie bei WAO auf der Website geschrieben sein")
         else:
             update.message.reply_text(f"Du bist kein Gruppenadmin")
     else:
@@ -316,7 +319,6 @@ def error(update, context):
     encoded_message = urllib.parse.quote('Update "%s" caused error "%s"', update, context.error)
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={encoded_message}"
     requests.get(content)
-
 
 
 checkUpdate()
