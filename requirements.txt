@@ -11,7 +11,6 @@ certbot==1.21.0
 certifi==2020.6.20
 chardet==4.0.0
 click==8.0.3
-cloud-init==22.4.2
 colorama==0.4.4
 command-not-found==0.3
 ConfigArgParse==1.5.3
@@ -80,8 +79,6 @@ tornado==6.1
 Twisted==22.1.0
 tzdata==2022.7
 tzlocal==4.2
-ubuntu-advantage-tools==8001
-ubuntu-drivers-common==0.0.0
 ufw==0.36.1
 unattended-upgrades==0.1
 urllib3==1.26.5
