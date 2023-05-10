@@ -51,17 +51,11 @@ def checkUpdate():
             f"Installed Announcer-Version: {versions['announcer']} - Please Update! (New Version: {remoteVersion['announcer']})")
 
 
-# Senderfunction for public announce
-def telegram_public_message(message, chatid):
-    encoded_message = urllib.parse.quote(message)
-    content = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={encoded_message}"
-    requests.get(content)
-
-
 # Create the base URL string
 with open("stations.json") as f:
     stationlist = json.load(f)
 
+base_url = "https://api.weareone.fm/v1/showplan/{station}/1"
 stations = stationlist["stations"]
 stationCount = len(stations)
 
@@ -95,31 +89,19 @@ def check():
                     data = response.json()
                     for x in data:
                         if x["m"] in subs["subscriptions"] and x["s"] // 1000 > time.time():
-                            show = x["n"]
-                            dj = x["m"]
-                            startUnix = x["s"]
-                            endUnix = x["e"]
-                            endUnix = endUnix // 1000
-                            startUnix = startUnix // 1000
-                            startTime = datetime.fromtimestamp(startUnix).strftime(
-                                "%d.%m.%Y um %H:%M"
-                            )
-                            startOffset = startUnix - now
-
-                            if x["m"] in subs["subscriptions"] and x["s"] // 1000 > now:
-                                uid = x["mi"] + x["s"] + x["e"]
-                                startUnix = x["s"] // 1000
-                                startOffset = startUnix - time.time()
-                                if minTime >= startOffset and uid not in sent:
-                                    show = x["n"]
-                                    dj = x["m"]
-                                    start_time = datetime.fromtimestamp(startUnix).strftime("%d.%m.%Y um %H:%M")
-                                    end_time = datetime.fromtimestamp(x["e"] // 1000).strftime("%H:%M")
-                                    message = f"⏰📣 Die Show {show} von {dj} auf {station} startet am {start_time}🎙️ #weareone!"
-                                    encoded_message = urllib.parse.quote(message)
-                                    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
-                                    requests.get(content)
-                                    sent.append(uid)
+                            uid = x["mi"] + x["s"] + x["e"]
+                            startUnix = x["s"] // 1000
+                            startOffset = startUnix - time.time()
+                            if minTime >= startOffset and uid not in sent:
+                                show = x["n"]
+                                dj = x["m"]
+                                start_time = datetime.fromtimestamp(startUnix).strftime("%d.%m.%Y um %H:%M")
+                                end_time = datetime.fromtimestamp(x["e"] // 1000).strftime("%H:%M")
+                                message = f"⏰📣 Die Show {show} von {dj} auf {station} startet am {start_time}🎙️ #weareone!"
+                                encoded_message = urllib.parse.quote(message)
+                                content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
+                                requests.get(content)
+                                sent.append(uid)
 
                     with open(cache_file, "w") as sentShows:
                         json.dump({"sent": sent}, sentShows)
