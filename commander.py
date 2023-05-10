@@ -7,10 +7,10 @@ import time
 import urllib
 import urllib.parse
 from datetime import datetime
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import requests
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -262,7 +262,8 @@ def confirm_unsubscribe(update, context):
         logger.warning(
             f"{query.message.from_user.username} versucht {dj} in {id} zu deabonnieren ohne {dj} je abonniert zu haben!")
         # Send confirmation message anyway
-        context.bot.answer_callback_query(callback_query_id=query.id, text=f"{dj} wurde nicht deabonniert, da er nicht abonniert war.")
+        context.bot.answer_callback_query(callback_query_id=query.id,
+                                          text=f"{dj} wurde nicht deabonniert, da er nicht abonniert war.")
         return
     # Send confirmation message
     context.bot.answer_callback_query(callback_query_id=query.id, text=f"{dj} wurde deabonniert.")
