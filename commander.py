@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import json
 import logging
 import os
@@ -49,7 +48,7 @@ def checkUpdate():
         logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
     else:
         logger.info(
-            f"Installed Commander-Version: {versions['commander']} - Please Update! (New Version: {remoteVersion['commander']})")
+            f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
 
 
 def main():
@@ -106,7 +105,7 @@ def setTime(update, context):
                 update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
         else:
             if minutes:
-                update.message.reply_text(f"Du bist kein Gruppenadmin")
+                update.message.reply_text("Du bist kein Gruppenadmin")
             else:
                 with open(f"data/{id}/config.json") as userConfig:
                     json_string = userConfig.read()
@@ -152,14 +151,14 @@ def start(update, context):
             f.write('{"minInfo": ' + config["defaultTime"] + '}')
             f.close()
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-            logger.info(f"READY!")
+            logger.info("READY!")
             context.bot.send_message(chat_id=id,
-                                     text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                          f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                          f"Beispiel: /subscribe Quro \n\r\n\r "
-                                          f"Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                     text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                          "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
+                                          "Beispiel: /subscribe Quro \n\r\n\r "
+                                          "Der Name muss wie bei WAO auf der Website geschrieben sein")
         else:
-            update.message.reply_text(f"Du bist kein Gruppenadmin")
+            update.message.reply_text("Du bist kein Gruppenadmin")
     else:
         logger.info(f"Welcoming {id}")
         os.mkdir(f"data/{id}")
@@ -179,12 +178,12 @@ def start(update, context):
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-        logger.info(f"READY!")
+        logger.info("READY!")
         context.bot.send_message(chat_id=id,
-                                 text=f"Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                      f"Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                      f"Beispiel: /subscribe Quro \n\r\n\r "
-                                      f"Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                 text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                      "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
+                                      "Beispiel: /subscribe Quro \n\r\n\r "
+                                      "Der Name muss wie bei WAO auf der Website geschrieben sein")
 
 
 def subscription(update, context):
@@ -258,6 +257,7 @@ def confirm_unsubscribe(update, context):
         context.bot.send_message(chat_id=query.message.chat_id, text=f"Du hast {dj} deabonniert!")
         logger.info(f"{query.message.from_user.username} hat {dj} in {id} deabonniert!")
     else:
+
         context.bot.send_message(chat_id=query.message.chat_id, text=f"{dj} ist nicht abonniert!")
         logger.warning(
             f"{query.message.from_user.username} versucht {dj} in {id} zu deabonnieren ohne {dj} je abonniert zu haben!")
@@ -266,7 +266,6 @@ def confirm_unsubscribe(update, context):
         return
     # Send confirmation message
     context.bot.answer_callback_query(callback_query_id=query.id, text=f"{dj} wurde deabonniert.")
-
 
 
 def subscribe(update, context):
@@ -319,7 +318,6 @@ def checksubs(update, context):
         endpoint_url = base_url.format(station=id)
 
         now = time.time()
-        current_time = datetime.fromtimestamp(now).strftime("%d.%m.%Y %H:%M")
         # Send a GET request to the generated Endpoint
         response = requests.get(endpoint_url)
         # Check the response status code
@@ -344,7 +342,7 @@ def checksubs(update, context):
     s.close()
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
-                                 text=f"In den nächsten 15 Minuten beginnen keine Shows!")
+                                 text="In den nächsten 15 Minuten beginnen keine Shows!")
 
 
 def error(update, context):

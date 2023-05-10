@@ -51,7 +51,7 @@ def checkUpdate():
 
 
 # Senderfunction for public announce
-def telegram_public_message(message, chat_id, bot_token):
+def telegram_public_message(message, chatid):
     encoded_message = urllib.parse.quote(message)
     content = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={encoded_message}"
     requests.get(content)
@@ -94,6 +94,18 @@ def check():
                     data = response.json()
                     for x in data:
                         if x["m"] in subs["subscriptions"] and x["s"] // 1000 > time.time():
+                        show = x["n"]
+                        dj = x["m"]
+                        startUnix = x["s"]
+                        endUnix = x["e"]
+                        endUnix = endUnix // 1000
+                        startUnix = startUnix // 1000
+                        startTime = datetime.fromtimestamp(startUnix).strftime(
+                            "%d.%m.%Y um %H:%M"
+                        )
+                        startOffset = startUnix - now
+
+                        if x["m"] in subs["subscriptions"] and x["s"] // 1000 > now:
                             uid = x["mi"] + x["s"] + x["e"]
                             startUnix = x["s"] // 1000
                             startOffset = startUnix - time.time()

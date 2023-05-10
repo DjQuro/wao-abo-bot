@@ -1,3 +1,4 @@
+[![Python application](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml)
 # We.aRe.oNe Abo Bot
 Telegrambot zum abonnieren von DJs der We.aRe.oNe Sendegruppe
 
@@ -7,8 +8,7 @@ Featurerequests und Fehler bitte über die Issue Funktion melden.
 
 # Benötigte Packages (Self-Hosting)
 ```bash
-pip install Requests
-pip install python-telegram-bot
+pip install -r Requirements.txt
 ```
 
 # Commands
