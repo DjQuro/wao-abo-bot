@@ -20,7 +20,7 @@ pip install -r Requirements.txt
 | /announce  | Nur für die ChatID in AdminID - Sendet eine Nachricht an ALLE USER! | /announce Hallo Welt!  |
 | /subscription  | Eine Liste aller Abos  | /subscription  |
 | /subscribe  | Einen DJ abonnieren. Schreibe den Namen des DJs wie in der WAO App  | /subscribe Quro  |
-| /unsubscribe  | Ein Abo beenden. Schreibe den Namen des DJs wie in der WAO App  | /unsubscribe Quro  |
+| /unsubscribe  | Ein Abo beenden.  | /unsubscribe  |
 
 # Config (Self-Hosting)
 In der Config unter bot_token den Bot Token angeben. Zudem wird für die Verwendung eine AdminID benötigt. Das ist die ChatID des Chats zwischen dem Admin und dem Bot.
