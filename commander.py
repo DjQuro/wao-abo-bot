@@ -7,9 +7,10 @@ import time
 import urllib
 import urllib.parse
 from datetime import datetime
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import requests
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -60,6 +61,7 @@ def main():
     dp.add_handler(CommandHandler('next', checksubs))
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
+    dp.add_handler(CallbackQueryHandler(confirm_unsubscribe))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
@@ -207,31 +209,63 @@ def subscription(update, context):
 
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
-    dj = " ".join(context.args)
-    if dj:
-        with open(f"data/{id}/subs.json") as subfile:
-            json_string = subfile.read()
-        subs = json.loads(json_string)
-        subs = subs["subscriptions"]
-        if dj in subs:
-            logger.info(f"Removing {dj} from subscriptions.json @ {id}")
-            subs.remove(dj)
-            with open(f"data/{id}/subs.json", "w") as subfile:
-                data = {
-                    "subscriptions": subs
-                }
-                json_string = json.dumps(data, indent=4)
-                subfile.write(json_string)
-            subfile.close()
-            context.bot.send_message(chat_id=update.effective_chat.id, text=f"Du hast {dj} deabonniert!")
-            logger.info(f"{update.message.from_user.username} hat {dj} in {id} deabonniert!")
-        else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text=f"{dj} ist nicht abonniert!")
-            logger.warning(
-                f"{update.message.from_user.username} versucht {dj} in {id} zu deabonnieren ohne {dj} je abonniert zu haben!")
+    subs_file_path = f"data/{id}/subs.json"
+    if not os.path.isfile(subs_file_path):
+        # If the subscriptions file does not exist, create it with empty subscriptions list
+        with open(subs_file_path, "w") as f:
+            f.write('{"subscriptions": []}')
+
+    with open(subs_file_path) as f:
+        subs_data = json.load(f)
+    subs = subs_data["subscriptions"]
+
+    if not subs:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Du hast noch keine DJs abonniert!")
+        return
+
+    # Create a list of buttons for each subscribed DJ
+    buttons = [InlineKeyboardButton(dj, callback_data=f"unsubscribe_{dj}") for dj in subs]
+    # Chunk the buttons into rows of 2
+    button_groups = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
+    # Create the keyboard
+    keyboard = InlineKeyboardMarkup(button_groups)
+    # Send the message with the keyboard
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Welche DJs möchtest du deabonnieren?",
+                             reply_markup=keyboard)
+
+
+def confirm_unsubscribe(update, context):
+    query = update.callback_query
+    callback_data = query.data
+    if not callback_data.startswith("unsubscribe_"):
+        return
+    dj = callback_data[len("unsubscribe_"):]
+    id = str(query.message.chat_id)
+    with open(f"data/{id}/subs.json") as subfile:
+        json_string = subfile.read()
+    subs = json.loads(json_string)["subscriptions"]
+    if dj in subs:
+        logger.info(f"Removing {dj} from subscriptions.json @ {id}")
+        subs.remove(dj)
+        with open(f"data/{id}/subs.json", "w") as subfile:
+            data = {
+                "subscriptions": subs
+            }
+            json_string = json.dumps(data, indent=4)
+            subfile.write(json_string)
+        subfile.close()
+        context.bot.send_message(chat_id=query.message.chat_id, text=f"Du hast {dj} deabonniert!")
+        logger.info(f"{query.message.from_user.username} hat {dj} in {id} deabonniert!")
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Auf welchen DJ hast du keinen Bock mehr?")
-        logger.error(f"{update.message.from_user.username} versuchte jemanden in {id} zu deabonnieren aber scheiterte.")
+
+        context.bot.send_message(chat_id=query.message.chat_id, text=f"{dj} ist nicht abonniert!")
+        logger.warning(
+            f"{query.message.from_user.username} versucht {dj} in {id} zu deabonnieren ohne {dj} je abonniert zu haben!")
+        # Send confirmation message anyway
+        context.bot.answer_callback_query(callback_query_id=query.id, text=f"{dj} wurde nicht deabonniert, da er nicht abonniert war.")
+        return
+    # Send confirmation message
+    context.bot.answer_callback_query(callback_query_id=query.id, text=f"{dj} wurde deabonniert.")
 
 
 def subscribe(update, context):
@@ -314,8 +348,8 @@ def checksubs(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.error('Update "%s" caused error "%s"', update, context.error)
-    encoded_message = urllib.parse.quote('Update "%s" caused error "%s"', update, context.error)
-    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={encoded_message}"
+    message = f'Update "{update}" caused error "{context.error}"'
+    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
     requests.get(content)
 
 

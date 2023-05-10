@@ -40,6 +40,7 @@ def checkUpdate():
     with urllib.request.urlopen(
             "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
         rem_version_string = remoteVersion.read()
+
         remoteVersion = json.loads(rem_version_string)
 
     if versions['announcer'] == remoteVersion['announcer']:
@@ -52,70 +53,47 @@ def checkUpdate():
 # Senderfunction for public announce
 def telegram_public_message(message, chatid):
     encoded_message = urllib.parse.quote(message)
-    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
+    content = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={encoded_message}"
     requests.get(content)
 
 
 # Create the base URL string
 with open("stations.json") as f:
-    json_string = f.read()
-stationlist = json.loads(json_string)
+    stationlist = json.load(f)
 
-base_url = "https://api.weareone.fm/v1/showplan/{station}/1"
 stations = stationlist["stations"]
-stationCount = 0
-for station, id in stations.items():
-    stationCount = stationCount + 1
+stationCount = len(stations)
 
 logger.info(f"WAO Bot {versions['announcer']} started - loaded {stationCount} stations")
 
 
 def check():
     rootdir = 'data'
-    for rootdir, dirs, files in os.walk(rootdir):
-        for subdir in dirs:
-            chatid = os.path.join(subdir)
-            global current_time, status
+    for subdir in os.scandir(rootdir):
+        if subdir.is_dir():
+            chatid = subdir.name
             with open(f"data/{chatid}/subs.json") as s:
-                sub_string = s.read()
-            subs = json.loads(sub_string)
+                subs = json.load(s)
             with open(f"data/{chatid}/config.json") as c:
-                conf_string = c.read()
-            chatConfig = json.loads(conf_string)
-            minTime = chatConfig['minInfo'] * 60
-            # Iterate over the stations in the dictionary
+                chatConfig = json.load(c)
+                minTime = chatConfig['minInfo'] * 60
+            cache_file = Path(f"data/{chatid}/cache.json")
+            if cache_file.is_file():
+                with open(cache_file) as sentShows:
+                    sent = json.load(sentShows)["sent"]
+            else:
+                with open(cache_file, 'w+') as f:
+                    f.write('{"sent": []}')
+                sent = []
+
             for station, id in stations.items():
-                # Use string formatting to insert the station ID into the URL
                 endpoint_url = base_url.format(station=id)
-
-                now = time.time()
-                current_time = datetime.fromtimestamp(now).strftime("%d.%m.%Y %H:%M")
-                # Send a GET request to the generated Endpoint
                 response = requests.get(endpoint_url)
-                # Check the response status code
                 status = str(response.status_code)
-                if response.status_code == 200:
-                    # Parse the JSON data from the response
-                    with urllib.request.urlopen(endpoint_url) as url:
-                        data = json.load(url)
-                    cache = Path(f"data/{chatid}/cache.json")
-                    if cache.is_file():
-                        with open(f"data/{chatid}/cache.json") as sentShows:
-                            sentJson = sentShows.read()
-                        sent = json.loads(sentJson)
-                        sent = sent["sent"]
-                        sentShows.close()
-                    else:
-                        f = open(cache, 'w+')
-                        f.write('{"sent": []}')
-                        f.close()
-                        with open(f"data/{chatid}/cache.json") as sentShows:
-                            sentJson = sentShows.read()
-                        sent = json.loads(sentJson)
-                        sent = sent["sent"]
-                        sentShows.close()
-
+                if response.ok:
+                    data = response.json()
                     for x in data:
+                        if x["m"] in subs["subscriptions"] and x["s"] // 1000 > time.time():
                         show = x["n"]
                         dj = x["m"]
                         startUnix = x["s"]
@@ -129,20 +107,21 @@ def check():
 
                         if x["m"] in subs["subscriptions"] and x["s"] // 1000 > now:
                             uid = x["mi"] + x["s"] + x["e"]
+                            startUnix = x["s"] // 1000
+                            startOffset = startUnix - time.time()
                             if minTime >= startOffset and uid not in sent:
-                                message = (
-                                    f"⏰📣 Die Show {show} von {dj} auf {station} startet am {startTime}🎙️ #weareone!")
+                                show = x["n"]
+                                dj = x["m"]
+                                start_time = datetime.fromtimestamp(startUnix).strftime("%d.%m.%Y um %H:%M")
+                                end_time = datetime.fromtimestamp(x["e"] // 1000).strftime("%H:%M")
+                                message = f"⏰📣 Die Show {show} von {dj} auf {station} startet am {start_time}🎙️ #weareone!"
                                 encoded_message = urllib.parse.quote(message)
                                 content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
                                 requests.get(content)
                                 sent.append(uid)
-                                with open(f"data/{chatid}/cache.json", "w") as sentShows:
-                                    data = {
-                                        "sent": sent
-                                    }
-                                    json_string = json.dumps(data, indent=4)
-                                    sentShows.write(json_string)
-                    s.close()
+
+                    with open(cache_file, "w") as sentShows:
+                        json.dump({"sent": sent}, sentShows)
 
                 else:
                     logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
