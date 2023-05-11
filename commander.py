@@ -337,7 +337,6 @@ def checksubs(update, context):
                                              text=f"Die Show {show} von {dj} auf {station} startet am {startTime}!")
         else:
             logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
-    s.close()
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text="In den nächsten 15 Minuten beginnen keine Shows!")

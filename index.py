@@ -95,7 +95,7 @@ def updateDB():
                         if datetime.strptime(djs[dj_name]["last_seen"],
                                              "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(180):
                             logger.info(
-                                f"{dj_name} seit {cconfig['maxInactivityDays']} Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
+                                f"{dj_name} seit 180 Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
                             del djs[dj_name]
                         else:
                             djs[dj_name]["last_seen"] = last_seen
