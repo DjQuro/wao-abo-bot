@@ -30,7 +30,7 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
-file_handler = logging.FileHandler('indexer.log')
+file_handler = logging.FileHandler('logs.log')
 file_handler.setLevel(logging.WARNING)
 file_handler.setFormatter(formatter)
 
@@ -89,14 +89,16 @@ def updateDB():
                     if dj_name not in djs:
                         logger.info(f"{dj_name} in die Datenbank aufgenommen.")
                         djs[dj_name] = {"last_seen": last_seen}
+                        new += 1
                     else:
-                        logger.info(f"{dj_name} ist bereits in der Datenbank vorhanden.")
+                        refreshed += 1
                         # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
                         if datetime.strptime(djs[dj_name]["last_seen"],
                                              "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(180):
-                            logger.info(
+                            logger.warning(
                                 f"{dj_name} seit 180 Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
                             del djs[dj_name]
+                            deleted += 1
                         else:
                             djs[dj_name]["last_seen"] = last_seen
 
@@ -128,11 +130,10 @@ def updateDB():
                     # Aktualisiere nur Einträge, die noch nicht in djs.json vorhanden sind
                     if dj_name not in djs:
                         djs[dj_name] = {"last_seen": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-                        logger.info(f"{dj_name} in die Datenbank aufgenommen.")
+                        logger.info(f"{dj_name} aus {subs_file} in die Datenbank aufgenommen.")
                         new += 1
                     else:
                         refreshed += 1
-                        logger.info(f"{dj_name} ist bereits in der Datenbank vorhanden.")
 
                 # Speichere die aktualisierte djs.json-Datei
                 with open(djs_file, "w") as f:
@@ -142,5 +143,6 @@ def updateDB():
 
 # checkUpdate()
 while True:
+    checkUpdate()
     updateDB()
     time.sleep(3600)
