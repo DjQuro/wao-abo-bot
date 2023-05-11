@@ -56,15 +56,16 @@ def main():
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler('unsubscribe', unsubscribe))
-    dp.add_handler(CallbackQueryHandler(confirm_unsubscribe))
     dp.add_handler(CommandHandler('subscribe', subscribe))
-    dp.add_handler(CallbackQueryHandler(button_subscribe))
+    dp.add_handler(CallbackQueryHandler(button_unsubscribe, pattern='^remove_'))
+    dp.add_handler(CallbackQueryHandler(button_subscribe, pattern='^add_'))
     dp.add_handler(CommandHandler('next', checksubs))
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
+
 
 
 def announce(update, context):
@@ -188,64 +189,46 @@ def start(update, context):
 
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
-    subs_file_path = f"data/{id}/subs.json"
-    if not os.path.isfile(subs_file_path):
-        # If the subscriptions file does not exist, create it with empty subscriptions list
-        with open(subs_file_path, "w") as f:
-            f.write('{"subscriptions": []}')
 
-    with open(subs_file_path) as f:
-        subs_data = json.load(f)
-    subs = subs_data["subscriptions"]
+    # Lade die Liste der abonnierten DJs
+    with open(f"data/{id}/subs.json") as f:
+        subs = json.load(f)
+    subscribed_djs = subs["subscriptions"]
 
-    if not subs:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Du hast noch keine DJs abonniert!")
-        return
+    # Erstelle ein Inline Keyboard mit den abonnierten DJs
+    keyboard = []
+    for dj in subscribed_djs:
+        keyboard.append([InlineKeyboardButton(dj, callback_data=f"remove_{dj}")])
 
-    # Create a list of buttons for each subscribed DJ
-    buttons = [InlineKeyboardButton(dj, callback_data=f"unsubscribe_{dj}") for dj in subs]
-    # Chunk the buttons into rows of 2
-    button_groups = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
-    # Create the keyboard
-    keyboard = InlineKeyboardMarkup(button_groups)
-    # Send the message with the keyboard
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Welche DJs möchtest du deabonnieren?",
-                             reply_markup=keyboard)
+    # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # Frage den Benutzer, welchen DJ er abbestellen möchte
+    update.message.reply_text(
+        "Welchen DJ möchtest du deabonnieren?",
+        reply_markup=reply_markup
+    )
 
 
-def confirm_unsubscribe(update, context):
+def button_unsubscribe(update, context):
     query = update.callback_query
-    callback_data = query.data
-    if not callback_data.startswith("unsubscribe_"):
-        return
-    dj = callback_data[len("unsubscribe_"):]
+    dj = query.data[7:]
     id = str(query.message.chat_id)
-    with open(f"data/{id}/subs.json") as subfile:
-        json_string = subfile.read()
-    subs = json.loads(json_string)["subscriptions"]
-    if dj in subs:
-        logger.info(f"Removing {dj} from subscriptions.json @ {id}")
-        subs.remove(dj)
-        with open(f"data/{id}/subs.json", "w") as subfile:
-            data = {
-                "subscriptions": subs
-            }
-            json_string = json.dumps(data, indent=4)
-            subfile.write(json_string)
-        subfile.close()
-        context.bot.send_message(chat_id=query.message.chat_id, text=f"Du hast {dj} deabonniert!")
-        logger.info(f"{query.message.from_user.username} hat {dj} in {id} deabonniert!")
-    else:
 
-        context.bot.send_message(chat_id=query.message.chat_id, text=f"{dj} ist nicht abonniert!")
-        logger.warning(
-            f"{query.message.from_user.username} versucht {dj} in {id} zu deabonnieren ohne {dj} je abonniert zu haben!")
-        # Send confirmation message anyway
-        context.bot.answer_callback_query(callback_query_id=query.id,
-                                          text=f"{dj} wurde nicht deabonniert, da er nicht abonniert war.")
-        return
-    # Send confirmation message
-    context.bot.answer_callback_query(callback_query_id=query.id, text=f"{dj} wurde deabonniert.")
+    # Lade die vorhandenen Abonnements des Benutzers
+    with open(f"data/{id}/subs.json") as f:
+        subs = json.load(f)
+
+    # Entferne den DJ aus den Abonnements
+    subs["subscriptions"].remove(dj)
+
+    # Speichere die aktualisierte Abonnementliste
+    with open(f"data/{id}/subs.json", "w") as f:
+        json.dump(subs, f)
+
+    # Sende eine Bestätigungsnachricht an den Benutzer
+    query.answer(text=f"{dj} wurde erfolgreich deabonniert.")
+    logger.info(f"{query.message.from_user.username} hat {dj} deabonniert!")
 
 
 def subscribe(update, context):
@@ -254,6 +237,11 @@ def subscribe(update, context):
     # Lade die Liste der abonnierten DJs
     with open(f"data/{id}/subs.json") as f:
         subs = json.load(f)
+
+    # Stelle sicher, dass der Schlüssel "subscriptions" in der subs.json-Datei vorhanden ist
+    if "subscriptions" not in subs:
+        subs["subscriptions"] = []
+
     subscribed_djs = subs["subscriptions"]
 
     # Lade die Liste aller DJs aus der djs.json-Datei und filtere die bereits abonnierten aus
@@ -264,7 +252,7 @@ def subscribe(update, context):
     # Erstelle ein Inline Keyboard mit den verfügbaren DJs
     keyboard = []
     for dj in available_djs:
-        keyboard.append([InlineKeyboardButton(dj, callback_data=dj)])
+        keyboard.append([InlineKeyboardButton(dj, callback_data=f"add_{dj}")])
 
     # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -278,23 +266,27 @@ def subscribe(update, context):
 
 def button_subscribe(update, context):
     query = update.callback_query
-    dj = query.data
+    dj = query.data[4:]
     id = str(query.message.chat_id)
 
     # Lade die vorhandenen Abonnements des Benutzers
     with open(f"data/{id}/subs.json") as f:
         subs = json.load(f)
 
-    # Füge den neuen DJ zum Abonnement hinzu
-    subs["subscriptions"].append(dj)
+    # Füge den neuen DJ zum Abonnement hinzu, wenn er noch nicht abonniert ist
+    if dj not in subs["subscriptions"]:
+        subs["subscriptions"].append(dj)
 
-    # Speichere die aktualisierte Abonnementliste
-    with open(f"data/{id}/subs.json", "w") as f:
-        json.dump(subs, f)
+        # Speichere die aktualisierte Abonnementliste
+        with open(f"data/{id}/subs.json", "w") as f:
+            json.dump(subs, f)
 
-    # Sende eine Bestätigungsnachricht an den Benutzer
-    query.answer(text=f"{dj} wurde erfolgreich abonniert.")
-    logger.info(f"{query.message.from_user.username} hat {dj} abonniert!")
+        # Sende eine Bestätigungsnachricht an den Benutzer
+        query.answer(text=f"{dj} wurde erfolgreich abonniert.")
+        logger.info(f"{query.message.from_user.username} hat {dj} abonniert!")
+    else:
+        # Wenn der DJ bereits abonniert ist, sende eine Fehlermeldung an den Benutzer
+        query.answer(text=f"{dj} ist bereits abonniert.")
 
 
 def checksubs(update, context):
@@ -306,13 +298,6 @@ def checksubs(update, context):
 
     base_url = "https://api.weareone.fm/v1/showplan/{station}/1"
     stations = stationlist["stations"]
-    i = 0
-    with open(f"data/{id}/subs.json") as s:
-        sub_string = s.read()
-    subs = json.loads(sub_string)
-    for sub in subs["subscriptions"]:
-        i = i + 1
-    logger.info(str(i) + " subscriptions loaded!")
     # Iterate over the stations in the dictionary
     for station, id in stations.items():
         # Use string formatting to insert the station ID into the URL
