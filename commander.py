@@ -197,8 +197,14 @@ def unsubscribe(update, context):
 
     # Erstelle ein Inline Keyboard mit den abonnierten DJs
     keyboard = []
+    row = []
     for dj in subscribed_djs:
-        keyboard.append([InlineKeyboardButton(dj, callback_data=f"remove_{dj}")])
+        if len(row) == 4:
+            keyboard.append(row)
+            row = []
+        row.append(InlineKeyboardButton(dj, callback_data=f"remove_{dj}"))
+    if row:
+        keyboard.append(row)
 
     # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -251,8 +257,14 @@ def subscribe(update, context):
 
     # Erstelle ein Inline Keyboard mit den verfügbaren DJs
     keyboard = []
+    row = []
     for dj in available_djs:
-        keyboard.append([InlineKeyboardButton(dj, callback_data=f"add_{dj}")])
+        row.append(InlineKeyboardButton(dj, callback_data=f"add_{dj}"))
+        if len(row) == 4:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
 
     # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
     reply_markup = InlineKeyboardMarkup(keyboard)
