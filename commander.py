@@ -9,7 +9,7 @@ import urllib.parse
 from datetime import datetime
 
 import requests
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 logger = logging.getLogger()
@@ -55,13 +55,13 @@ def main():
     updater = Updater(config['bot_token'], use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler('subscription', subscription))
     dp.add_handler(CommandHandler('unsubscribe', unsubscribe))
+    dp.add_handler(CallbackQueryHandler(confirm_unsubscribe))
     dp.add_handler(CommandHandler('subscribe', subscribe))
+    dp.add_handler(CallbackQueryHandler(button_subscribe))
     dp.add_handler(CommandHandler('next', checksubs))
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
-    dp.add_handler(CallbackQueryHandler(confirm_unsubscribe))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
@@ -186,27 +186,6 @@ def start(update, context):
                                       "Der Name muss wie bei WAO auf der Website geschrieben sein")
 
 
-def subscription(update, context):
-    id = str(update.effective_chat.id)
-    i = 0
-    with open(f"data/{id}/subs.json") as subfile:
-        json_string = subfile.read()
-    subs = json.loads(json_string)
-    for sub in subs["subscriptions"]:
-        if i == 0:
-            subnames = sub
-        else:
-            subnames = subnames + "\n\r"
-            subnames = subnames + sub
-        i = i + 1
-    if i == 0:
-        update.message.reply_text("Du hast keinen DJ abonniert")
-    elif i == 1:
-        update.message.reply_text("Du hast einen DJ abonniert\n\r\n\r" + subnames)
-    else:
-        update.message.reply_text("Du hast " + str(i) + " DJs abonniert\n\r\n\r" + subnames)
-
-
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
     subs_file_path = f"data/{id}/subs.json"
@@ -271,30 +250,51 @@ def confirm_unsubscribe(update, context):
 
 def subscribe(update, context):
     id = str(update.effective_chat.id)
-    dj = " ".join(context.args)
-    if dj:
-        with open(f"data/{id}/subs.json") as subfile:
-            json_string = subfile.read()
-        subs = json.loads(json_string)
-        sublist = subs["subscriptions"]
-        subfile.close()
-        if dj in sublist:
-            context.bot.send_message(chat_id=update.effective_chat.id, text=f"{dj} ist bereits abonniert!")
-            logger.warning(f"{update.message.from_user.username} versucht {dj} in {id} doppelt zu abonnieren!")
-        else:
-            sublist.append(dj)
-            logger.info(f"{update.message.from_user.username} hat {dj} in {id} abonniert!")
-            with open(f"data/{id}/subs.json", "w") as subfile:
-                data = {
-                    "subscriptions": sublist
-                }
-                json_string = json.dumps(data, indent=4)
-                subfile.write(json_string)
-            subfile.close()
-            context.bot.send_message(chat_id=update.effective_chat.id, text=f"Du hast {dj} abonniert!")
-    else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Bitte gib an, wen du abonnieren möchtest.")
-        logger.error(f"{update.message.from_user.username} versuchte jemanden in {id} zu abonnieren aber scheiterte.")
+
+    # Lade die Liste der abonnierten DJs
+    with open(f"data/{id}/subs.json") as f:
+        subs = json.load(f)
+    subscribed_djs = subs["subscriptions"]
+
+    # Lade die Liste aller DJs aus der djs.json-Datei und filtere die bereits abonnierten aus
+    with open("djs.json") as f:
+        all_djs = json.load(f)
+    available_djs = [dj for dj in all_djs if dj not in subscribed_djs]
+
+    # Erstelle ein Inline Keyboard mit den verfügbaren DJs
+    keyboard = []
+    for dj in available_djs:
+        keyboard.append([InlineKeyboardButton(dj, callback_data=dj)])
+
+    # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # Frage den Benutzer, welchen DJ er abonnieren möchte
+    update.message.reply_text(
+        "Welchen DJ möchtest du abonnieren?",
+        reply_markup=reply_markup
+    )
+
+
+def button_subscribe(update, context):
+    query = update.callback_query
+    dj = query.data
+    id = str(query.message.chat_id)
+
+    # Lade die vorhandenen Abonnements des Benutzers
+    with open(f"data/{id}/subs.json") as f:
+        subs = json.load(f)
+
+    # Füge den neuen DJ zum Abonnement hinzu
+    subs["subscriptions"].append(dj)
+
+    # Speichere die aktualisierte Abonnementliste
+    with open(f"data/{id}/subs.json", "w") as f:
+        json.dump(subs, f)
+
+    # Sende eine Bestätigungsnachricht an den Benutzer
+    query.answer(text=f"{dj} wurde erfolgreich abonniert.")
+    logger.info(f"{query.message.from_user.username} hat {dj} abonniert!")
 
 
 def checksubs(update, context):

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Better not touch this code
 import json
 import logging
 import os

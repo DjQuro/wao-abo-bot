@@ -1,5 +1,5 @@
 {
 	"bot_token":"<yourbottokenhere>",
-	"defaultTime": 15,
+	"defaultTime": "15",
 	"adminID": "<adminchatidhere>"
 }
