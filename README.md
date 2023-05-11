@@ -18,8 +18,7 @@ pip install -r Requirements.txt
 | /next  | Welche Sendungen beginnen in den nächsten 15 Minuten? (Bezogen auf ALLE DJs)  | /next |
 | /time  | Setzt die Frühste Benachrichtigungszeit in Minuten (Ohne Argument wird diese nur ausgegeben) | /time 30  |
 | /announce  | Nur für die ChatID in AdminID - Sendet eine Nachricht an ALLE USER! | /announce Hallo Welt!  |
-| /subscription  | Eine Liste aller Abos  | /subscription  |
-| /subscribe  | Einen DJ abonnieren. Schreibe den Namen des DJs wie in der WAO App  | /subscribe Quro  |
+| /subscribe  | Einen DJ abonnieren. Schreibe den Namen des DJs wie in der WAO App  | /subscribe  |
 | /unsubscribe  | Ein Abo beenden.  | /unsubscribe  |
 
 # Config (Self-Hosting)
