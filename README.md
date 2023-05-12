@@ -33,9 +33,6 @@ Als Ankündigungsbot in einem Channel ist dieser Bot leider nicht nutzbar! Hierf
 
 # To Do
 - Performance anpassen (Der Abstand zwischen den gesendeten Nachrichten ist teilweise sehr hoch)
-- Inline Keyboard für /unsubscribe
-- Reply basierte Commands
-- Häufig abonnierte DJs im Subscribe Commands als Inline Keyboard
 - Chatunabhängiger Senderauschschluss (Für Genrebasierte Gruppen)
 - Channelabo-Modus (statt DJs werden Sender abonniert)
 - Wir brauchen mehr Gummibären!
