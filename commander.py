@@ -6,9 +6,10 @@ import sys
 import time
 import urllib
 import urllib.parse
-from datetime import datetime
-
 import requests
+#import wao.api
+
+from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
@@ -55,6 +56,9 @@ def main():
     updater = Updater(config['bot_token'], use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler('subscriptions', list_subs))
+    dp.add_handler(CommandHandler('abos', list_subs))
+    dp.add_handler(CommandHandler('subs', list_subs))
     dp.add_handler(CommandHandler('unsubscribe', unsubscribe))
     dp.add_handler(CommandHandler('subscribe', subscribe))
     dp.add_handler(CallbackQueryHandler(button_unsubscribe, pattern='^remove_'))
@@ -62,10 +66,11 @@ def main():
     dp.add_handler(CommandHandler('next', checksubs))
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
+    dp.add_handler(CommandHandler('live', now_live))
+    dp.add_handler(CallbackQueryHandler(live_button))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
-
 
 
 def announce(update, context):
@@ -82,6 +87,56 @@ def announce(update, context):
         update.message.reply_text("Ankündigung an alle Nutzer gesendet!")
     else:
         update.message.reply_text("Du hast keine Berechtigung dazu!")
+
+
+def now_live(update, context):
+    keyboard = []
+    json_data = get_radio_data()
+    row = []
+    for station_key, station_value in json_data.items():
+        if isinstance(station_value, dict):
+            # Erstellt einen InlineKeyboardButton für jeden Sender und fügt ihn zur aktuellen Zeile hinzu
+            row.append(InlineKeyboardButton(station_key, callback_data=station_key))
+            # Wenn drei Buttons in der Zeile erreicht sind, füge die Zeile zur Tastatur hinzu und starte eine neue Zeile
+            if len(row) == 2:
+                keyboard.append(row)
+                row = []
+
+    # Füge die letzte Zeile zur Tastatur hinzu, falls nicht bereits geschehen
+    if row:
+        keyboard.append(row)
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text('Wähle einen Sender:', reply_markup=reply_markup)
+
+
+def live_button(update, context):
+    query = update.callback_query
+    station_key = query.data
+
+    json_data = get_radio_data()
+    station_value = json_data.get(station_key, {})
+
+    dj_value = station_value.get('dj', 'Playlist')
+    sn_value = station_value.get('sn', 'Kein Showname')
+    t_value = station_value.get('t', 'Unbekannter Titel')
+    a_value = station_value.get('a', 'Unbekannter Artist')
+    if dj_value != 'Playlist':
+        message = f"ℹ️Live auf {station_key}.FMℹ️\n\r\n\r🎧{t_value}\n\r{a_value}\n\r🎙️{dj_value}, {sn_value}"
+    else:
+        message = f"ℹ️Live auf {station_key}.FMℹ️\n\r\n\r🎧{t_value}\n\r{a_value}\n\rKein DJ on Air"
+
+    query.edit_message_text(text=message)
+
+
+def get_radio_data():
+    radio_url = "https://api.weareone.fm/v1/radio"
+    response = requests.get(radio_url)
+    if response.status_code == 200:
+        json_data = response.json()
+        return json_data
+    else:
+        return {}
 
 
 def setTime(update, context):
@@ -155,9 +210,7 @@ def start(update, context):
             logger.info("READY!")
             context.bot.send_message(chat_id=id,
                                      text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                          "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                          "Beispiel: /subscribe Quro \n\r\n\r "
-                                          "Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                          "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
         else:
             update.message.reply_text("Du bist kein Gruppenadmin")
     else:
@@ -182,9 +235,7 @@ def start(update, context):
         logger.info("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                      "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                      "Beispiel: /subscribe Quro \n\r\n\r "
-                                      "Der Name muss wie bei WAO auf der Website geschrieben sein")
+                                      "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
 
 
 def unsubscribe(update, context):
@@ -301,6 +352,35 @@ def button_subscribe(update, context):
         query.answer(text=f"{dj} ist bereits abonniert.")
 
 
+def blacklist(update, context):
+    id = str(update.effective_chat.id)
+    dj = " ".join(context.args)
+    if id != config['adminID']:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="KEINE BERECHTIGUNG!")
+    else:
+        if dj:
+            with open("blacklist.json") as blacklistf:
+                json_string = blacklistf.read()
+            blacklistArray = json.loads(json_string)
+            blacklist = blacklistArray["blacklist"]
+            blacklistf.close()
+            if dj in blacklist:
+                context.bot.send_message(chat_id=update.effective_chat.id, text=f"{dj} ist bereits auf der Blacklist!")
+            else:
+                blacklist.append(dj)
+                logger.info(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
+                with open(f"blacklist.json", "w") as blacklistf:
+                    data = {
+                        "blacklist": blacklist
+                    }
+                    json_string = json.dumps(data, indent=4)
+                    blacklistf.write(json_string)
+                blacklistf.close()
+                context.bot.send_message(chat_id=update.effective_chat.id, text=f"Du hast {dj} auf die Blacklist gesetzt!")
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Bitte gib an, wen du bannen möchtest.")
+
+
 def checksubs(update, context):
     id = str(update.effective_chat.id)
     showCount = 0
@@ -340,6 +420,27 @@ def checksubs(update, context):
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text="In den nächsten 15 Minuten beginnen keine Shows!")
+
+
+def list_subs(update, context):
+    id = str(update.effective_chat.id)
+    i = 0
+    with open(f"data/{id}/subs.json") as subfile:
+        json_string = subfile.read()
+    subs = json.loads(json_string)
+    for sub in subs["subscriptions"]:
+        if i == 0:
+            subnames = sub
+        else:
+            subnames = subnames + "\n\r"
+            subnames = subnames + sub
+        i = i + 1
+    if i == 0:
+        update.message.reply_text("Du hast keinen DJ abonniert")
+    elif i == 1:
+        update.message.reply_text("Du hast einen DJ abonniert\n\r\n\r" + subnames)
+    else:
+        update.message.reply_text("Du hast " + str(i) + " DJs abonniert\n\r\n\r" + subnames)
 
 
 def error(update, context):
