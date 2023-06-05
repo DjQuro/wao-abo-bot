@@ -1,5 +1,6 @@
 {
 	"bot_token":"<yourbottokenhere>",
 	"defaultTime": "15",
-	"adminID": "<adminchatidhere>"
+	"adminID": "<adminchatidhere>",
+	"testmode": false
 }
