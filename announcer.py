@@ -72,7 +72,8 @@ def check():
                 chatConfig = json.load(c)
                 minTime = chatConfig['minInfo'] * 60
             with open(f'data/{chatid}/stations.json') as s:
-                stations = json.load(s)
+                stationslist = json.load(s)
+                stations = stationslist["stations"]
 
             cache_file = Path(f"data/{chatid}/cache.json")
             if cache_file.is_file():

@@ -1,0 +1,7 @@
+[ 2023-06-05 19:26:59,291 - WARNING ] Datenbank wird aktualisiert!
+[ 2023-06-05 19:27:06,575 - WARNING ] Datenbank erfolgreich aktualisiert! Neue Einträge:53 Veränderte Einträge:13 Gelöschte Einträge:0 Durchgeführte Operationen: 66
+[ 2023-06-05 19:29:13,417 - INFO ] WAO Bot v2.7.0 started - loaded 8 stations
+[ 2023-06-05 19:29:13,533 - INFO ] Installed Announcer-Version: v2.7.0 - Up to Date!
+[ 2023-06-05 19:29:13,669 - ERROR ] [stations] FEHLER 404 von https://api.weareone.fm/v1/showplan/{'technobase.fm': 5, 'housetime.fm': 6, 'clubtime.fm': 11, 'teatime.fm': 13, 'replay.fm': 14, 'hardbase.fm': 7, 'coretime.fm': 10, 'trancebase.fm': 8}/1
+[ 2023-06-05 19:32:51,504 - INFO ] WAO Bot v2.7.0 started - loaded 8 stations
+[ 2023-06-05 19:32:51,772 - INFO ] Installed Announcer-Version: v2.7.0 - Up to Date!
