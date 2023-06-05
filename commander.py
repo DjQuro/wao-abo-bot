@@ -168,11 +168,17 @@ def start(update, context):
             f.write('{"minInfo": ' + config["defaultTime"] + '}')
             f.close()
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+            stationsfile = f"data/{id}/stations.json"
+            with open("stations.json") as preset:
+                json_string = preset.read()
+            f = open(stationsfile, 'w+')
+            f.write(json_string)
+            f.close()
+            logger.info(f"Creating data/{id}/stations.json")
             logger.info("READY!")
             context.bot.send_message(chat_id=id,
                                      text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                          "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                          "Beispiel: /subscribe Quro \n\r\n\r "
+                                          "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r "
                                           "Der Name muss wie bei WAO auf der Website geschrieben sein")
         else:
             update.message.reply_text("Du bist kein Gruppenadmin")
@@ -195,11 +201,16 @@ def start(update, context):
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        stationsfile = f"data/{id}/stations.json"
+        with open("stations.json") as preset:
+            json_string = preset.read()
+        f = open(stationsfile, 'w+')
+        f.write(json_string)
+        f.close()
         logger.info("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                      "Nutze /subscribe DJ-NAME um einen DJ zu abonnieren.\n\r\n\r "
-                                      "Beispiel: /subscribe Quro \n\r\n\r "
+                                      "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r "
                                       "Der Name muss wie bei WAO auf der Website geschrieben sein")
 
 
@@ -320,7 +331,7 @@ def button_subscribe(update, context):
 def checksubs(update, context):
     id = str(update.effective_chat.id)
     showCount = 0
-    with open("stations.json") as f:
+    with open(f"data/{id}/stations.json") as f:
         json_string = f.read()
         stationlist = json.loads(json_string)
 
@@ -355,7 +366,7 @@ def checksubs(update, context):
             logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
-                                 text="In den nächsten 15 Minuten beginnen keine Shows!")
+                                 text="In den nächsten 15 Minuten beginnen keine Shows auf deinen abonnierten Kanälen!")
 
 
 def error(update, context):
