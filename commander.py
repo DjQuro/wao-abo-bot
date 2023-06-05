@@ -243,13 +243,14 @@ def setTime(update, context):
         user = context.bot.get_chat_member(chat_id, user_id)
         if user.status in ["administrator", "creator"]:
             if minutes:
+                minutes = int(minutes)  # Konvertiere den Eingabe-String in eine Ganzzahl
                 if minutes > 1440:
                     update.message.reply_text(
-                        f"Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
+                        "Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
                 else:
                     if minutes < 1:
                         update.message.reply_text(
-                            f"Bitte wähle einen Wert zwischen 1 und 1440.")
+                            "Bitte wähle einen Wert zwischen 1 und 1440.")
                     else:
                         with open(f"data/{id}/config.json") as userConfig:
                             json_string = userConfig.read()
@@ -272,17 +273,18 @@ def setTime(update, context):
                     f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
     else:
         if minutes:
+            minutes = int(minutes)  # Konvertiere den Eingabe-String in eine Ganzzahl
             if minutes > 1440:
                 update.message.reply_text(
-                    f"Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
+                    "Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
             else:
                 if minutes < 1:
                     update.message.reply_text(
-                        f"Bitte wähle einen Wert zwischen 1 und 1440.")
+                        "Bitte wähle einen Wert zwischen 1 und 1440.")
                 else:
                     userConfig = f"data/{id}/config.json"
                     f = open(userConfig, 'w+')
-                    f.write('{"minInfo": ' + minutes + '}')
+                    f.write('{"minInfo": ' + str(minutes) + '}')
                     f.close()
                     update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
         else:
@@ -290,7 +292,6 @@ def setTime(update, context):
                 json_string = userConfig.read()
             conf = json.loads(json_string)
             update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
-
 
 def start(update, context):
     id = str(update.effective_chat.id)
