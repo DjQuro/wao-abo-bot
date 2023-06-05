@@ -71,7 +71,7 @@ def check():
             with open(f"data/{chatid}/config.json") as c:
                 chatConfig = json.load(c)
                 minTime = chatConfig['minInfo'] * 60
-            with open(f'data/{id}/stations.json') as s:
+            with open(f'data/{chatid}/stations.json') as s:
                 stations = json.load(s)
 
             cache_file = Path(f"data/{chatid}/cache.json")
