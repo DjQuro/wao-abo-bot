@@ -53,6 +53,15 @@ def checkUpdate():
 
 
 def main():
+    if config['bot_token'] == "<yourbottokenhere>":
+        logger.error("Invalid Bot Token")
+    else:
+        logger.info(f"Authorized with {config['bot_token']} Starting!")
+        checkUpdate()
+        init()
+
+
+def init():
     updater = Updater(config['bot_token'], use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
@@ -68,9 +77,29 @@ def main():
     dp.add_handler(CommandHandler('announce', announce))
     dp.add_handler(CommandHandler('live', now_live))
     dp.add_handler(CallbackQueryHandler(live_button))
+    dp.add_handler(CommandHandler('addstation', add_station))
+    dp.add_handler(CallbackQueryHandler(add_station_button, pattern='^+station_'))
+    dp.add_handler(CommandHandler('removestation', remove_station))
+    dp.add_handler(CallbackQueryHandler(remove_station_button, pattern='^+station_'))
+
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
+
+def add_station(update, context):
+    id = str(update.effective_chat.id)
+
+
+def add_station_button(update, context):
+    print("empty")
+
+
+def remove_station_button(update, context):
+    print("empty")
+
+
+def remove_station(update, context):
+    id = str(update.effective_chat.id)
 
 
 def announce(update, context):
@@ -479,5 +508,4 @@ def error(update, context):
     requests.get(content)
 
 
-checkUpdate()
 main()
