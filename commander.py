@@ -149,11 +149,19 @@ def setTime(update, context):
         user = context.bot.get_chat_member(chat_id, user_id)
         if user.status in ["administrator", "creator"]:
             if minutes:
-                userConfig = f"data/{id}/config.json"
-                f = open(userConfig, 'w+')
-                f.write('{"minInfo": ' + minutes + '}')
-                f.close()
-                update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
+                if minutes > 1440:
+                    update.message.reply_text(
+                        f"Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
+                else:
+                    if minutes < 1:
+                        update.message.reply_text(
+                            f"Bitte wähle einen Wert zwischen 1 und 1440.")
+                    else:
+                        with open(f"data/{id}/config.json") as userConfig:
+                            json_string = userConfig.read()
+                        conf = json.loads(json_string)
+                        update.message.reply_text(
+                            f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
             else:
                 with open(f"data/{id}/config.json") as userConfig:
                     json_string = userConfig.read()
@@ -170,11 +178,19 @@ def setTime(update, context):
                     f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
     else:
         if minutes:
-            userConfig = f"data/{id}/config.json"
-            f = open(userConfig, 'w+')
-            f.write('{"minInfo": ' + minutes + '}')
-            f.close()
-            update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
+            if minutes > 1440:
+                update.message.reply_text(
+                    f"Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
+            else:
+                if minutes < 1:
+                    update.message.reply_text(
+                        f"Bitte wähle einen Wert zwischen 1 und 1440.")
+                else:
+                    userConfig = f"data/{id}/config.json"
+                    f = open(userConfig, 'w+')
+                    f.write('{"minInfo": ' + minutes + '}')
+                    f.close()
+                    update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
         else:
             with open(f"data/{id}/config.json") as userConfig:
                 json_string = userConfig.read()
@@ -207,6 +223,13 @@ def start(update, context):
             f.write('{"minInfo": ' + config["defaultTime"] + '}')
             f.close()
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+            stationsfile = f"data/{id}/stations.json"
+            with open("stations.json") as preset:
+                json_string = preset.read()
+            f = open(stationsfile, 'w+')
+            f.write(json_string)
+            f.close()
+            logger.info(f"Creating data/{id}/stations.json")
             logger.info("READY!")
             context.bot.send_message(chat_id=id,
                                      text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
@@ -232,11 +255,16 @@ def start(update, context):
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        stationsfile = f"data/{id}/stations.json"
+        with open("stations.json") as preset:
+            json_string = preset.read()
+        f = open(stationsfile, 'w+')
+        f.write(json_string)
+        f.close()
         logger.info("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                       "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
-
 
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
@@ -384,7 +412,7 @@ def blacklist(update, context):
 def checksubs(update, context):
     id = str(update.effective_chat.id)
     showCount = 0
-    with open("stations.json") as f:
+    with open(f"data/{id}/stations.json") as f:
         json_string = f.read()
         stationlist = json.loads(json_string)
 
@@ -419,7 +447,7 @@ def checksubs(update, context):
             logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
-                                 text="In den nächsten 15 Minuten beginnen keine Shows!")
+                                 text="In den nächsten 15 Minuten beginnen keine Shows auf deinen abonnierten Kanälen!")
 
 
 def list_subs(update, context):
