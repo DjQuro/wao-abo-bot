@@ -11,7 +11,7 @@ import requests
 
 from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -52,16 +52,47 @@ def checkUpdate():
             f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
 
 
-def main():
-    if config['bot_token'] == "<yourbottokenhere>":
-        logger.error("Invalid Bot Token")
-    else:
-        logger.info(f"Authorized with {config['bot_token']} Starting!")
-        checkUpdate()
-        init()
-
-
 def init():
+    if config['testmode'] == True:
+        id = 13370815
+        logger.warning("Test-Mode Enabled!")
+        logger.info(f"Welcoming {id}")
+        os.mkdir(f"data/{id}")
+        logger.info(f"Creating data/{id}")
+        subfile = f"data/{id}/subs.json"
+        f = open(subfile, 'w+')
+        f.write('{"subscriptions": []}')
+        f.close()
+        logger.info(f"Creating data/{id}/subs.json")
+        cachefile = f"data/{id}/cache.json"
+        f = open(cachefile, 'w+')
+        f.write('{"sent": []}')
+        f.close()
+        logger.info(f"Creating data/{id}/cache.json")
+        configfile = f"data/{id}/config.json"
+        f = open(configfile, 'w+')
+        f.write('{"minInfo": ' + config["defaultTime"] + '}')
+        f.close()
+        logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        stationsfile = f"data/{id}/stations.json"
+        with open("data/318491860/stations.json") as preset:
+            json_string = preset.read()
+        f = open(stationsfile, 'w+')
+        f.write(json_string)
+        f.close()
+        logger.info("READY!")
+    else:
+        if config['bot_token'] == "<yourbottokenhere>":
+            logger.error("Invalid Bot Token")
+        else:
+            logger.info(f"Authorized with {config['bot_token']} Starting!")
+            if config['adminID'] == "<adminchatidhere>":
+                logger.error("Invalid Admin Chat ID - These are required for Announce and Error Reporting!")
+            checkUpdate()
+            main()
+
+
+def main():
     updater = Updater(config['bot_token'], use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
@@ -76,31 +107,65 @@ def init():
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
     dp.add_handler(CommandHandler('live', now_live))
-    dp.add_handler(CallbackQueryHandler(live_button))
-    dp.add_handler(CommandHandler('addstation', add_station))
-    dp.add_handler(CallbackQueryHandler(add_station_button, pattern='^+station_'))
-    dp.add_handler(CommandHandler('removestation', remove_station))
-    dp.add_handler(CallbackQueryHandler(remove_station_button, pattern='^+station_'))
-
+    dp.add_handler(CallbackQueryHandler(live_button, pattern='^live_'))
+    dp.add_handler(CommandHandler('stations', get_stations_keyboard))
+    dp.add_handler(CallbackQueryHandler(handle_station_subscription, pattern=r"toggle_station_.*"))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
 
-def add_station(update, context):
-    id = str(update.effective_chat.id)
+def get_stations_keyboard(update, context):
+    chat_id = update.effective_chat.id
+    stations_file = f"data/{chat_id}/stations.json"
+    sender_file = "sender.json"
+
+    with open(stations_file, "r") as file:
+        stations_data = json.load(file)
+
+    with open(sender_file, "r") as file:
+        sender_data = json.load(file)
+
+    keyboard = []
+    for sender in sender_data:
+        sender_name = sender_data[sender].get("name")
+        sender_id = sender_data[sender].get("id")
+        if sender_name and sender_id:
+            button_text = f"❌ {sender_name}" if sender_name in stations_data["stations"] else f"➕ {sender_name}"
+            button_callback = f"toggle_station_{sender_name}"
+            keyboard.append([InlineKeyboardButton(button_text, callback_data=button_callback)])
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.send_message(chat_id=chat_id, text="Wähle einen Sender aus:", reply_markup=reply_markup)
 
 
-def add_station_button(update, context):
-    print("empty")
+def handle_station_subscription(update, context):
+    chat_id = update.callback_query.message.chat_id
+    stations_file = f"data/{chat_id}/stations.json"
+    sender_file = "sender.json"
+    callback_data = update.callback_query.data
+    sender_name = callback_data.split("_")[-1]
 
+    with open(stations_file, "r") as file:
+        stations_data = json.load(file)
 
-def remove_station_button(update, context):
-    print("empty")
+    if sender_name in stations_data["stations"]:
+        del stations_data["stations"][sender_name]
+    else:
+        with open(sender_file, "r") as file:
+            sender_data = json.load(file)
+            sender_id = None
+            for sender, data in sender_data.items():
+                if data["name"] == sender_name:
+                    sender_id = data["id"]
+                    break
+            if sender_id:
+                stations_data["stations"][sender_name] = sender_id
 
+    with open(stations_file, "w") as file:
+        json.dump(stations_data, file, indent=4)
 
-def remove_station(update, context):
-    id = str(update.effective_chat.id)
-
+    update.callback_query.message.reply_text("Deine Auswahl wurde aktualisiert.")
+    update.callback_query.message.delete()
 
 def announce(update, context):
     id = str(update.effective_chat.id)
@@ -125,7 +190,7 @@ def now_live(update, context):
     for station_key, station_value in json_data.items():
         if isinstance(station_value, dict):
             # Erstellt einen InlineKeyboardButton für jeden Sender und fügt ihn zur aktuellen Zeile hinzu
-            row.append(InlineKeyboardButton(station_key, callback_data=station_key))
+            row.append(InlineKeyboardButton(station_key, callback_data=f"live_{station_key}"))
             # Wenn drei Buttons in der Zeile erreicht sind, füge die Zeile zur Tastatur hinzu und starte eine neue Zeile
             if len(row) == 2:
                 keyboard.append(row)
@@ -141,7 +206,7 @@ def now_live(update, context):
 
 def live_button(update, context):
     query = update.callback_query
-    station_key = query.data
+    station_key = query.data[5:]
 
     json_data = get_radio_data()
     station_value = json_data.get(station_key, {})
@@ -253,7 +318,7 @@ def start(update, context):
             f.close()
             logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
             stationsfile = f"data/{id}/stations.json"
-            with open("stations.json") as preset:
+            with open("sender.json") as preset:
                 json_string = preset.read()
             f = open(stationsfile, 'w+')
             f.write(json_string)
@@ -285,7 +350,7 @@ def start(update, context):
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
         stationsfile = f"data/{id}/stations.json"
-        with open("stations.json") as preset:
+        with open("sender.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
         f.write(json_string)
@@ -318,10 +383,13 @@ def unsubscribe(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     # Frage den Benutzer, welchen DJ er abbestellen möchte
-    update.message.reply_text(
+    message = update.message.reply_text(
         "Welchen DJ möchtest du deabonnieren?",
         reply_markup=reply_markup
     )
+
+    # Speichere die Nachrichten-ID für das spätere Löschen
+    context.user_data["message_id"] = message.message_id
 
 
 def button_unsubscribe(update, context):
@@ -340,9 +408,13 @@ def button_unsubscribe(update, context):
     with open(f"data/{id}/subs.json", "w") as f:
         json.dump(subs, f)
 
+    # Lösche die vorherige Nachricht mit dem Inline-Keyboard
+    context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
+
     # Sende eine Bestätigungsnachricht an den Benutzer
     query.answer(text=f"{dj} wurde erfolgreich deabonniert.")
     logger.info(f"{query.message.from_user.username} hat {dj} deabonniert!")
+
 
 
 def subscribe(update, context):
@@ -378,10 +450,13 @@ def subscribe(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     # Frage den Benutzer, welchen DJ er abonnieren möchte
-    update.message.reply_text(
+    message = update.message.reply_text(
         "Welchen DJ möchtest du abonnieren?",
         reply_markup=reply_markup
     )
+
+    # Speichere die Nachrichten-ID für das spätere Löschen
+    context.user_data["message_id"] = message.message_id
 
 
 def button_subscribe(update, context):
@@ -401,12 +476,16 @@ def button_subscribe(update, context):
         with open(f"data/{id}/subs.json", "w") as f:
             json.dump(subs, f)
 
+        # Lösche die vorherige Nachricht mit dem Inline-Keyboard
+        context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
+
         # Sende eine Bestätigungsnachricht an den Benutzer
         query.answer(text=f"{dj} wurde erfolgreich abonniert.")
         logger.info(f"{query.message.from_user.username} hat {dj} abonniert!")
     else:
         # Wenn der DJ bereits abonniert ist, sende eine Fehlermeldung an den Benutzer
         query.answer(text=f"{dj} ist bereits abonniert.")
+
 
 
 def blacklist(update, context):
@@ -508,4 +587,4 @@ def error(update, context):
     requests.get(content)
 
 
-main()
+init()
