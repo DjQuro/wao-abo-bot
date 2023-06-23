@@ -21,6 +21,8 @@ pip install -r Requirements.txt
 | /subscribe  | Einen DJ abonnieren. Schreibe den Namen des DJs wie in der WAO App  | /subscribe  |
 | /unsubscribe  | Ein Abo beenden.  | /unsubscribe  |
 | /subs  | Alle Abos anzeigen.  | /subs /abos /subscriptions  |
+| /live  | Abruf der aktuellen Track/Showdaten.  | /live  |
+
 
 # Config (Self-Hosting)
 In der Config unter bot_token den Bot Token angeben. Zudem wird für die Verwendung eine AdminID benötigt. Das ist die ChatID des Chats zwischen dem Admin und dem Bot.
