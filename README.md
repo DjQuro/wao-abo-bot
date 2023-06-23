@@ -20,6 +20,7 @@ pip install -r Requirements.txt
 | /announce  | Nur für die ChatID in AdminID - Sendet eine Nachricht an ALLE USER! | /announce Hallo Welt!  |
 | /subscribe  | Einen DJ abonnieren. Schreibe den Namen des DJs wie in der WAO App  | /subscribe  |
 | /unsubscribe  | Ein Abo beenden.  | /unsubscribe  |
+| /subs  | Alle Abos anzeigen.  | /subs /abos /subscriptions  |
 
 # Config (Self-Hosting)
 In der Config unter bot_token den Bot Token angeben. Zudem wird für die Verwendung eine AdminID benötigt. Das ist die ChatID des Chats zwischen dem Admin und dem Bot.
@@ -33,9 +34,6 @@ Als Ankündigungsbot in einem Channel ist dieser Bot leider nicht nutzbar! Hierf
 
 # To Do
 - Performance anpassen (Der Abstand zwischen den gesendeten Nachrichten ist teilweise sehr hoch)
-- Chatunabhängiger Senderauschschluss (Für Genrebasierte Gruppen)
-- Channelabo-Modus (statt DJs werden Sender abonniert)
 - Wir brauchen mehr Gummibären!
-- Chatunabhängige Benachrichtigungen
 - Supportfunktion für Betreiber
 
