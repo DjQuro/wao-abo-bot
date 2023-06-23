@@ -22,6 +22,7 @@ pip install -r Requirements.txt
 | /unsubscribe  | Ein Abo beenden.  | /unsubscribe  |
 | /subs  | Alle Abos anzeigen.  | /subs /abos /subscriptions  |
 | /live  | Abruf der aktuellen Track/Showdaten.  | /live  |
+| /stations  | Aktiviert oder Deaktiviert abrufbare Sender.  | /stations  |
 
 
 # Config (Self-Hosting)
