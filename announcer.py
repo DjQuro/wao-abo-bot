@@ -100,7 +100,7 @@ def check():
                                 dj = x["m"]
                                 start_time = datetime.fromtimestamp(startUnix).strftime("%d.%m.%Y um %H:%M")
                                 end_time = datetime.fromtimestamp(x["e"] // 1000).strftime("%H:%M")
-                                message = f"⏰📣 Die Show {show} von {dj} auf {station} startet am {start_time}🎙️ #weareone!"
+                                message = f"⏰📣 Die Show {show} von {dj} auf {station} startet am {start_time} Uhr🎙️ #weareone!"
                                 encoded_message = urllib.parse.quote(message)
                                 content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"
                                 requests.get(content)
