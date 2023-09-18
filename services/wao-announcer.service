@@ -1,0 +1,14 @@
+[Unit]
+Description=WAO-Announcer
+After=multi-user.target
+Conflicts=getty@tty1.service
+ 
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /root/WAO-Abobot/announcer.py
+WorkingDirectory=/root/WAO-Abobot/
+Restart=always
+User=root
+ 
+[Install]
+WantedBy=multi-user.target

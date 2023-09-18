@@ -59,10 +59,10 @@ def checkUpdate():
 def updateDB():
     day = 0
     new = 0
-    refreshed = 0
+    dj_count = 0
     deleted = 0
     base_url = "https://api.weareone.fm/v1/showplan/{station}/{day}"
-    logger.warning("Datenbank wird aktualisiert!")
+    logger.info("Datenbank wird aktualisiert!")
 
     while day < 7:
         if os.path.exists(djs_file):
@@ -91,7 +91,7 @@ def updateDB():
                         djs[dj_name] = {"last_seen": last_seen}
                         new += 1
                     else:
-                        refreshed += 1
+                        dj_count += 1
                         # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
                         if datetime.strptime(djs[dj_name]["last_seen"],
                                              "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(180):
@@ -99,6 +99,7 @@ def updateDB():
                                 f"{dj_name} seit 180 Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
                             del djs[dj_name]
                             deleted += 1
+                            dj_count -= 1
                         else:
                             djs[dj_name]["last_seen"] = last_seen
 
@@ -109,39 +110,8 @@ def updateDB():
         with open(djs_file, "w") as f:
             json.dump(djs, f)
         day += 1
-    if os.path.exists(djs_file):
-        with open(djs_file) as f:
-            djs = json.load(f)
-    # Aktualisiere alle Unterordner von data
-    for root, dirs, files in os.walk("data"):
-        for file in files:
-            if file == "subs.json":
-                subs_file = os.path.join(root, file)
-                logger.info(f"{subs_file} gefunden!")
-                # Laden der aktuellen subs.json-Datei
-                if os.path.exists(subs_file):
-                    with open(subs_file) as f:
-                        subs = json.load(f)
-                else:
-                    subs = {}
+    logger.info(f"Datenbank erfolgreich aktualisiert! Neue Einträge:{new} Gelöschte Einträge:{deleted} Registrierte DJs:{new + dj_count}")
 
-                # Aktualisiere alle Einträge in subs.json
-                for dj_name in subs["subscriptions"]:
-                    # Aktualisiere nur Einträge, die noch nicht in djs.json vorhanden sind
-                    if dj_name not in djs:
-                        djs[dj_name] = {"last_seen": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-                        logger.info(f"{dj_name} aus {subs_file} in die Datenbank aufgenommen.")
-                        new += 1
-                    else:
-                        refreshed += 1
-
-                # Speichere die aktualisierte djs.json-Datei
-                with open(djs_file, "w") as f:
-                    json.dump(djs, f)
-    logger.warning(f"Datenbank erfolgreich aktualisiert! Neue Einträge:{new} Veränderte Einträge:{refreshed} Gelöschte Einträge:{deleted} Durchgeführte Operationen: {new + refreshed + deleted}")
-
-
-# checkUpdate()
 while True:
     checkUpdate()
     updateDB()

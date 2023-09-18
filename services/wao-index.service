@@ -1,0 +1,14 @@
+[Unit]
+Description=WAO-Indexer
+After=multi-user.target
+Conflicts=getty@tty1.service
+ 
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /root/WAO-Abobot/index.py
+User=root
+Restart=always
+WorkingDirectory=/root/WAO-Abobot/
+ 
+[Install]
+WantedBy=multi-user.target

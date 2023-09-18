@@ -15,7 +15,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageH
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('[ %(asctime)s - %(levelname)s ] %(message)s')
+formatter = logging.Formatter('[ %(asctime)s - %(levelname)s - Commander] %(message)s')
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.DEBUG)
@@ -40,16 +40,22 @@ versionfile.close()
 
 
 def checkUpdate():
-    with urllib.request.urlopen(
-            "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-        rem_version_string = remoteVersion.read()
-        remoteVersion = json.loads(rem_version_string)
+        response = requests.get("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json")
+        status = str(response.status_code)
+        if response.ok:
+            with urllib.request.urlopen(
+                 "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
+                 rem_version_string = remoteVersion.read()
+                 remoteVersion = json.loads(rem_version_string)
 
-    if versions['commander'] == remoteVersion['commander']:
-        logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
-    else:
-        logger.info(
-            f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
+            if versions['commander'] == remoteVersion['commander']:
+               logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
+            else:
+               logger.info(
+               f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
+        else:
+            logger.error(
+            f"Update failed! ERROR {status}")
 
 
 def init():
@@ -252,9 +258,10 @@ def setTime(update, context):
                         update.message.reply_text(
                             "Bitte wähle einen Wert zwischen 1 und 1440.")
                     else:
-                        with open(f"data/{id}/config.json") as userConfig:
-                            json_string = userConfig.read()
-                        conf = json.loads(json_string)
+                        userConfig = f"data/{id}/config.json"
+                        f = open(userConfig, 'w+')
+                        f.write('{"minInfo": ' + str(minutes) + '}')
+                        f.close()
                         update.message.reply_text(
                             f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
             else:
@@ -286,7 +293,7 @@ def setTime(update, context):
                     f = open(userConfig, 'w+')
                     f.write('{"minInfo": ' + str(minutes) + '}')
                     f.close()
-                    update.message.reply_text(f"Frühste Benachrichtigung auf {minutes} Minuten gesetzt")
+                    update.message.reply_text(f"Frühste Benachrichtigung auf {str(minutes)} Minuten gesetzt")
         else:
             with open(f"data/{id}/config.json") as userConfig:
                 json_string = userConfig.read()
@@ -583,7 +590,7 @@ def list_subs(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.error('Update "%s" caused error "%s"', update, context.error)
-    message = f'Update "{update}" caused error "{context.error}"'
+    message = f'⚠️⚠️⚠️ STÖRUNG! - [COMMANDER] Update "{update}", Fehler "{context.error} - Nähere Infos in der logs.log"'
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
     requests.get(content)
 

@@ -22,7 +22,7 @@ config = json.loads(json_string)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('[ %(asctime)s - %(levelname)s ] %(message)s')
+formatter = logging.Formatter('[ %(asctime)s - %(levelname)s - Announcer] %(message)s')
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.DEBUG)
@@ -35,19 +35,28 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(stdout_handler)
 
+def error(context):
+    """Log Errors caused by Updates."""
+    logger.error('Caused Error "%s"', context.error)
+    message = f'⚠️⚠️⚠️ STÖRUNG! - U[C[ANNOUNCER] Fehler "{context.error} - Nähere Infos in der logs.log"'
+    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
+    requests.get(content)
 
 def checkUpdate():
-    with urllib.request.urlopen(
-            "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-        rem_version_string = remoteVersion.read()
-
-        remoteVersion = json.loads(rem_version_string)
-
-    if versions['announcer'] == remoteVersion['announcer']:
-        logger.info(f"Installed Announcer-Version: {versions['announcer']} - Up to Date!")
-    else:
-        logger.info(
+    response = requests.get("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json")
+    status = str(response.status_code)
+    if response.ok:
+        with urllib.request.urlopen(
+             "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
+             rem_version_string = remoteVersion.read()
+             remoteVersion = json.loads(rem_version_string)
+        if versions['announcer'] == remoteVersion['announcer']:
+           logger.info(f"Installed Announcer-Version: {versions['announcer']} - Up to Date!")
+        else:
+           logger.info(
             f"Installed Announcer-Version: {versions['announcer']} - Please Update! (New Version: {remoteVersion['announcer']})")
+    else:
+        logger.error(f"Update-Check failed! ERROR: {status}")
 
 
 # Create the base URL string

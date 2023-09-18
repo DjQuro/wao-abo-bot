@@ -1,6 +1,6 @@
 {
-	"bot_token":"5695079538:AAGxNZweb2yHlz2ooSA8b73PvGVQL3P5f7A",
+	"bot_token":"<yourbottokenhere>",
 	"defaultTime": "15",
-	"adminID": "318491860",
+	"adminID": "<adminchatidhere>",
 	"testmode": false
 }
