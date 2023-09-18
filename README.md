@@ -2,7 +2,7 @@
 # We.aRe.oNe Abo Bot
 Telegrambot zum abonnieren von DJs der We.aRe.oNe Sendegruppe
 
-Zurzeit verfügbar in Telegram unter https://t.me/wao_announce_bot für den Privatbetrieb oder für den gemeinschaftlichen Austausch unter https://t.me/waoabotest
+Zurzeit verfügbar in Telegram unter https://t.me/wao_announce_bot
 
 Featurerequests und Fehler bitte über die Issue Funktion melden.
 
@@ -27,9 +27,6 @@ pip install -r Requirements.txt
 
 # Config (Self-Hosting)
 In der Config unter bot_token den Bot Token angeben. Zudem wird für die Verwendung eine AdminID benötigt. Das ist die ChatID des Chats zwischen dem Admin und dem Bot.
-
-# Ausschluss von Sendern (Self-Hosting)
-Ist ein Sender im Bot nicht gewünscht, kann dieser aus der stations.json entfernt werden
 
 # Wo funktioniert der Bot?
 Der Bot funktioniert im Privatchat sowie in Gruppen und Supergruppen (Achtung! In Gruppen können /time und /start NUR von Gruppenadmins ausgeführt werden)
