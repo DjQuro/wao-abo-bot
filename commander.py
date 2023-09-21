@@ -81,7 +81,7 @@ def init():
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
         stationsfile = f"data/{id}/stations.json"
-        with open("data/318491860/stations.json") as preset:
+        with open(f"data/{id}/stations.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
         f.write(json_string)
