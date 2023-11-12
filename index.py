@@ -24,7 +24,7 @@ djs_file = "djs.json"
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('[ %(asctime)s - %(levelname)s ] %(message)s')
+formatter = logging.Formatter('[ %(asctime)s - %(levelname)s - Indexer] %(message)s')
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
@@ -63,6 +63,9 @@ def updateDB():
     deleted = 0
     base_url = "https://api.weareone.fm/v1/showplan/{station}/{day}"
     logger.info("Datenbank wird aktualisiert!")
+    with open("blacklist.json") as blacklistfile:
+       json_string = blacklistfile.read()
+    blacklist = json.loads(json_string)
 
     while day < 7:
         if os.path.exists(djs_file):
@@ -85,23 +88,31 @@ def updateDB():
                     dj_name = entry['m']
                     last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    # Prüfe, ob DJ bereits in djs.json existiert
-                    if dj_name not in djs:
+                    # Prüfe, ob DJ bereits in djs.json existiert und nicht auf der Blacklist steht
+                    if dj_name not in djs and dj_name not in blacklist['blacklist']:
                         logger.info(f"{dj_name} in die Datenbank aufgenommen.")
                         djs[dj_name] = {"last_seen": last_seen}
                         new += 1
                     else:
-                        dj_count += 1
-                        # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
-                        if datetime.strptime(djs[dj_name]["last_seen"],
-                                             "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(180):
-                            logger.warning(
-                                f"{dj_name} seit 180 Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
-                            del djs[dj_name]
-                            deleted += 1
-                            dj_count -= 1
+                        if dj_name in djs:
+                            dj_count += 1
+                            logger.info(f"{dj_name} aktualisiert.")
+                            # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
+                            if datetime.strptime(djs[dj_name]["last_seen"], "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(30):
+                                logger.warning(f"{dj_name} seit 30 Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
+                                del djs[dj_name]
+                                deleted += 1
+                                dj_count -= 1
+                            # Prüfe, ob DJ gebannt wurde
+                            elif dj_name in blacklist['blacklist']:
+                                logger.warning(f"{dj_name} wurde gebannt und wird aus der Datenbank entfernt.")
+                                del djs[dj_name]
+                                deleted += 1
+                                dj_count -= 1
+                            else:
+                                djs[dj_name]["last_seen"] = last_seen
                         else:
-                            djs[dj_name]["last_seen"] = last_seen
+                            logger.warning(f"{dj_name} auf der Blacklist und wird nicht in die Datenbank aufgenommen.")
 
             else:
                 logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")

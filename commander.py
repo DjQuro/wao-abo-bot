@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import subprocess
 import logging
 import os
 import sys
@@ -7,7 +8,7 @@ import time
 import urllib
 import urllib.parse
 import requests
-#import wao.api
+# import wao.api
 
 from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton
@@ -21,7 +22,7 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.DEBUG)
 stdout_handler.setFormatter(formatter)
 
-file_handler = logging.FileHandler('logs.log')
+file_handler = logging.FileHandler('/root/WAO-Abobot/logs.log')
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 
@@ -38,28 +39,32 @@ with open("versions.json") as versionfile:
 versions = json.loads(version_string)
 versionfile.close()
 
+with open("blacklist.json") as blacklistfile:
+    json_string = blacklistfile.read()
+blacklist = json.loads(json_string)
+
 
 def checkUpdate():
-        response = requests.get("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json")
-        status = str(response.status_code)
-        if response.ok:
-            with urllib.request.urlopen(
-                 "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-                 rem_version_string = remoteVersion.read()
-                 remoteVersion = json.loads(rem_version_string)
+    response = requests.get("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json")
+    status = str(response.status_code)
+    if response.ok:
+        with urllib.request.urlopen(
+                "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
+            rem_version_string = remoteVersion.read()
+            remoteVersion = json.loads(rem_version_string)
 
-            if versions['commander'] == remoteVersion['commander']:
-               logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
-            else:
-               logger.info(
-               f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
+        if versions['commander'] == remoteVersion['commander']:
+            logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
         else:
-            logger.error(
+            logger.info(
+                f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
+    else:
+        logger.error(
             f"Update failed! ERROR {status}")
 
 
 def init():
-    if config['testmode'] == True:
+    if config['testmode']:
         id = 13370815
         logger.warning("Test-Mode Enabled!")
         logger.info(f"Welcoming {id}")
@@ -81,7 +86,7 @@ def init():
         f.close()
         logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
         stationsfile = f"data/{id}/stations.json"
-        with open(f"data/{id}/stations.json") as preset:
+        with open("data/318491860/stations.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
         f.write(json_string)
@@ -113,12 +118,105 @@ def main():
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
     dp.add_handler(CommandHandler('live', now_live))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, konami_code))
     dp.add_handler(CallbackQueryHandler(live_button, pattern='^live_'))
     dp.add_handler(CommandHandler('stations', get_stations_keyboard))
     dp.add_handler(CallbackQueryHandler(handle_station_subscription, pattern=r"toggle_station_.*"))
+    dp.add_handler(CommandHandler('ban', ban))
+    dp.add_handler(CommandHandler('banlist', list_bans))
+    dp.add_handler(CommandHandler('unban', unban))
+    dp.add_handler(CallbackQueryHandler(button_unban, pattern='^unban_'))
+    dp.add_handler(CommandHandler('status', status))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
+
+
+def check_service_status(service_name):
+    try:
+        result = subprocess.run(['systemctl', 'is-active', service_name], capture_output=True, text=True, check=True)
+        status = result.stdout.strip()
+        return 'active' if status == 'active' else 'dead'
+    except subprocess.CalledProcessError:
+        return 'dead'
+
+
+def status(update, context):
+    chat_id = update.effective_chat.id
+    announcer = check_service_status("wao-announcer")
+    commander = check_service_status("wao-commander")
+    indexer = check_service_status("wao-index")
+
+    with open("status.json") as statusfile:
+        json_string = statusfile.read()
+    statuslist = json.loads(json_string)
+    if statuslist['announcer'] <= 1 and announcer == 'active':
+        announcerindicator = '🟢'
+    elif announcer != 'dead':
+        announcerindicator = '🟡'
+    else:
+        announcerindicator = '🔴'
+
+    if statuslist['commander'] <= 1 and commander == 'active':
+        commanderindicator = '🟢'
+    elif commander != 'dead':
+        commanderindicator = '🟡'
+    else:
+        commanderindicator = '🔴'
+
+    if statuslist['indexer'] <= 1 and indexer == 'active':
+        indexerindicator = '🟢'
+    elif indexer != 'dead':
+        indexerindicator = '🟡'
+    else:
+        indexerindicator = '🔴'
+
+    if announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] == 0 and \
+            statuslist['commander'] == 0 and statuslist['indexer'] == 0:
+        message = (
+            f"Verfügbarkeit der Dienste:\n\n"
+            f"{announcerindicator} - Announcer\n"
+            f"{commanderindicator} - Commander\n"
+            f"{indexerindicator} - Indexer\n\n"
+            f"Alle Dienste laufen Störungsfrei!"
+        )
+        context.bot.send_message(chat_id=chat_id, text=message)
+    elif announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] >= 1 or \
+            statuslist['commander'] >= 1 or statuslist['indexer'] >= 1:
+        message = (
+            f"Verfügbarkeit der Dienste:\n\n"
+            f"{announcerindicator} - Announcer\n"
+            f"{commanderindicator} - Commander\n"
+            f"{indexerindicator} - Indexer\n\n"
+            f"Aktuell liegt eine Störung vor!"
+        )
+        context.bot.send_message(chat_id=chat_id, text=message)
+    elif announcer == 'dead' or commander == 'dead' or indexer == 'dead':
+        message = (
+            f"Verfügbarkeit der Dienste:\n\n"
+            f"{announcerindicator} - Announcer\n"
+            f"{commanderindicator} - Commander\n"
+            f"{indexerindicator} - Indexer\n\n"
+            f"Ein oder mehrere Dienste sind ausgefallen!"
+        )
+        context.bot.send_message(chat_id=chat_id, text=message)
+
+
+def konami_code(update, context):
+    id = update.effective_chat.id
+    text = update.message.text.lower()
+    if "hoch hoch runter runter links rechts links rechts b a" in text:
+        context.bot.send_message(chat_id=id, text="Konami-Code erkannt!🕹️ WAO+ Abonnement freigeschaltet!")
+
+
+def gamble(update, context):
+    id = update.effective_chat.id
+    text = update.message.text
+    if text == "🎲":
+        context.bot.send_message(chat_id=id, text="🎲")
+    elif text == "🎰":
+        context.bot.send_message(chat_id=id, text="🎰")
+
 
 def get_stations_keyboard(update, context):
     chat_id = update.effective_chat.id
@@ -172,6 +270,7 @@ def handle_station_subscription(update, context):
 
     update.callback_query.message.reply_text("Deine Auswahl wurde aktualisiert.")
     update.callback_query.message.delete()
+
 
 def announce(update, context):
     id = str(update.effective_chat.id)
@@ -262,6 +361,9 @@ def setTime(update, context):
                         f = open(userConfig, 'w+')
                         f.write('{"minInfo": ' + str(minutes) + '}')
                         f.close()
+                        with open(f"data/{id}/config.json") as userConfig:
+                            json_string = userConfig.read()
+                        conf = json.loads(json_string)
                         update.message.reply_text(
                             f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
             else:
@@ -299,6 +401,7 @@ def setTime(update, context):
                 json_string = userConfig.read()
             conf = json.loads(json_string)
             update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
+
 
 def start(update, context):
     id = str(update.effective_chat.id)
@@ -368,8 +471,11 @@ def start(update, context):
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                       "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
 
+
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
+    username = str(update.message.from_user.username)
+    logger.info(f"{username}@{id} ran unsubscribe")
 
     # Lade die Liste der abonnierten DJs
     with open(f"data/{id}/subs.json") as f:
@@ -390,13 +496,13 @@ def unsubscribe(update, context):
     # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Frage den Benutzer, welchen DJ er abbestellen möchte
+    # Frage den Benutzer, welchen DJ er abbestellen m�chte
     message = update.message.reply_text(
-        "Welchen DJ möchtest du deabonnieren?",
+        "Welcher DJ soll deabonniert werden?",
         reply_markup=reply_markup
     )
 
-    # Speichere die Nachrichten-ID für das spätere Löschen
+    # Speichere die Nachrichten-ID f�r das sp�tere L�schen
     context.user_data["message_id"] = message.message_id
 
 
@@ -416,17 +522,18 @@ def button_unsubscribe(update, context):
     with open(f"data/{id}/subs.json", "w") as f:
         json.dump(subs, f)
 
-    # Lösche die vorherige Nachricht mit dem Inline-Keyboard
+    # L�sche die vorherige Nachricht mit dem Inline-Keyboard
     context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
 
-    # Sende eine Bestätigungsnachricht an den Benutzer
+    # Sende eine Best�tigungsnachricht an den Benutzer
     query.answer(text=f"{dj} wurde erfolgreich deabonniert.")
     logger.info(f"{query.message.from_user.username} hat {dj} deabonniert!")
 
 
-
 def subscribe(update, context):
     id = str(update.effective_chat.id)
+    username = str(update.message.from_user.username)
+    logger.info(f"{username}@{id} ran subscribe")
 
     # Lade die Liste der abonnierten DJs
     with open(f"data/{id}/subs.json") as f:
@@ -489,14 +596,13 @@ def button_subscribe(update, context):
 
         # Sende eine Bestätigungsnachricht an den Benutzer
         query.answer(text=f"{dj} wurde erfolgreich abonniert.")
-        logger.info(f"{query.message.from_user.username} hat {dj} abonniert!")
+        logger.info(f"{dj} in {id} abonniert!")
     else:
         # Wenn der DJ bereits abonniert ist, sende eine Fehlermeldung an den Benutzer
         query.answer(text=f"{dj} ist bereits abonniert.")
 
 
-
-def blacklist(update, context):
+def ban(update, context):
     id = str(update.effective_chat.id)
     dj = " ".join(context.args)
     if id != config['adminID']:
@@ -512,7 +618,7 @@ def blacklist(update, context):
                 context.bot.send_message(chat_id=update.effective_chat.id, text=f"{dj} ist bereits auf der Blacklist!")
             else:
                 blacklist.append(dj)
-                logger.info(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
+                logger.warning(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
                 with open(f"blacklist.json", "w") as blacklistf:
                     data = {
                         "blacklist": blacklist
@@ -520,7 +626,8 @@ def blacklist(update, context):
                     json_string = json.dumps(data, indent=4)
                     blacklistf.write(json_string)
                 blacklistf.close()
-                context.bot.send_message(chat_id=update.effective_chat.id, text=f"Du hast {dj} auf die Blacklist gesetzt!")
+                context.bot.send_message(chat_id=update.effective_chat.id,
+                                         text=f"Du hast {dj} auf die Blacklist gesetzt!")
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Bitte gib an, wen du bannen möchtest.")
 
@@ -555,7 +662,7 @@ def checksubs(update, context):
                 startUnix = startUnix // 1000
                 startTime = datetime.fromtimestamp(startUnix).strftime("%d.%m.%Y um %H:%M")
                 startOffset = startUnix - now
-                if 900 >= startOffset > 0:
+                if 900 >= startOffset > 0 and dj not in blacklist['blacklist']:
                     showCount = showCount + 1
                     context.bot.send_message(chat_id=update.effective_chat.id,
                                              text=f"Die Show {show} von {dj} auf {station} startet am {startTime}!")
@@ -567,18 +674,20 @@ def checksubs(update, context):
 
 
 def list_subs(update, context):
-    id = str(update.effective_chat.id)
+    chat_id = str(update.effective_chat.id)
     i = 0
-    with open(f"data/{id}/subs.json") as subfile:
+    subnames = []
+    with open(f"data/{chat_id}/subs.json") as subfile:
         json_string = subfile.read()
     subs = json.loads(json_string)
     for sub in subs["subscriptions"]:
-        if i == 0:
-            subnames = sub
-        else:
-            subnames = subnames + "\n\r"
-            subnames = subnames + sub
-        i = i + 1
+        if sub not in blacklist['blacklist']:
+            if i == 0:
+                subnames = sub
+            else:
+                subnames = subnames + "\n\r"
+                subnames = subnames + sub
+            i = i + 1
     if i == 0:
         update.message.reply_text("Du hast keinen DJ abonniert")
     elif i == 1:
@@ -587,12 +696,108 @@ def list_subs(update, context):
         update.message.reply_text("Du hast " + str(i) + " DJs abonniert\n\r\n\r" + subnames)
 
 
+def list_bans(update, context):
+    chat_id = str(update.effective_chat.id)
+    i = 0
+    with open(f"blacklist.json") as banfile:
+        json_string = banfile.read()
+    blacklist = json.loads(json_string)
+
+    if chat_id != config['adminID']:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="KEINE BERECHTIGUNG!")
+    else:
+        for dj in blacklist["blacklist"]:
+            if i == 0:
+                blacklist = dj
+            else:
+                blacklist = blacklist + "\n\r"
+                blacklist = blacklist + dj
+            i = i + 1
+        if i == 0:
+            update.message.reply_text("Alle Lieb!")
+        elif i == 1:
+            update.message.reply_text("Es ist ein DJ gebannt\n\r\n\r" + blacklist)
+        else:
+            update.message.reply_text("Es sind " + str(i) + " DJs gebannt\n\r\n\r" + blacklist)
+
+
+def unban(update, context):
+    id = str(update.effective_chat.id)
+    username = str(update.message.from_user.username)
+    logger.info(f"{username}@{id} ran unban")
+    if id != config['adminID']:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="KEINE BERECHTIGUNG!")
+    else:
+        # Lade die Liste der abonnierten DJs
+        with open(f"blacklist.json") as f:
+            blacklist = json.load(f)
+        banned_djs = blacklist['blacklist']
+
+        # Erstelle ein Inline Keyboard mit den abonnierten DJs
+        keyboard = []
+        row = []
+        for dj in banned_djs:
+            if len(row) == 4:
+                keyboard.append(row)
+                row = []
+            row.append(InlineKeyboardButton(dj, callback_data=f"unban_{dj}"))
+        if row:
+            keyboard.append(row)
+
+        # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        # Frage den Benutzer, welchen DJ er abbestellen möchte
+        message = update.message.reply_text(
+            "Welchen DJ möchtest du entbannen?",
+            reply_markup=reply_markup
+        )
+
+        # Speichere die Nachrichten-ID für das spätere Löschen
+        context.user_data["message_id"] = message.message_id
+
+
+def button_unban(update, context):
+    query = update.callback_query
+    dj = query.data[6:]
+    id = str(query.message.chat_id)
+
+    # Lade die vorhandenen Abonnements des Benutzers
+    with open(f"blacklist.json") as f:
+        blacklist = json.load(f)
+
+    # Entferne den DJ aus den Abonnements
+    blacklist["blacklist"].remove(dj)
+
+    # Speichere die aktualisierte Abonnementliste
+    with open(f"blacklist.json", "w") as f:
+        json.dump(blacklist, f)
+
+    # Lösche die vorherige Nachricht mit dem Inline-Keyboard
+    context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
+
+    # Sende eine Bestätigungsnachricht an den Benutzer
+    query.answer(text=f"{dj} wurde erfolgreich entbannt.")
+    logger.info(f"{dj} in {id} entbannt")
+
+
 def error(update, context):
+    with open("status.json") as statusfile:
+        json_string = statusfile.read()
+    statuslist = json.loads(json_string)
+
+    errors = statuslist['commander']
+
     """Log Errors caused by Updates."""
     logger.error('Update "%s" caused error "%s"', update, context.error)
-    message = f'⚠️⚠️⚠️ STÖRUNG! - [COMMANDER] Update "{update}", Fehler "{context.error} - Nähere Infos in der logs.log"'
+    message = f'⚠️⚠️⚠️ STÖRUNG! - COMMANDER Update "{update}", Fehler "{context.error} - Nähere Infos in der logs.log"'
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
     requests.get(content)
+    errors += 1
+
+    # Schreibe die aktualisierte statuslist zurück in die Datei
+    with open("status.json", "w") as statusfile:
+        json.dump(statuslist, statusfile)
 
 
 init()
