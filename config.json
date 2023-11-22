@@ -3,4 +3,26 @@
   "defaultTime": "15",
 	"adminID": "<AdminID here>",
   "testmode": false
+     "maintenance":{
+      "active":false,
+      "sheduledMaintenance":false,
+      "activeMessage":"Wartungsarbeiten aktiv",
+      "sheduledMessage":"Am 01.12.2023 von 16:00 bis 18:00 Uhr führen wir Wartungsarbeiten durch."
+   },
+   "immune":[
+      "Quro",
+      "G4bby"
+   ],
+   "permaban":[
+   ],
+   "maxErrorBeforeYellow":5,
+   "disableErrorReport":{
+      "enabled": true,
+      "modes":[
+        "noMessages",
+        "maxMessages"
+      ],
+      "mode": "maxMessages",
+      "maxMessagesCount": 10
+   }
 }

@@ -98,7 +98,7 @@ def updateDB():
                             dj_count += 1
                             logger.info(f"{dj_name} aktualisiert.")
                             # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
-                            if datetime.strptime(djs[dj_name]["last_seen"], "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(30):
+                            if datetime.strptime(djs[dj_name]["last_seen"], "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(config["maxInactivityDays"]) and djs[dj_name] not in config["immune"]:
                                 logger.warning(f"{dj_name} seit 30 Tagen nicht mehr erkannt. Wird aus der Datenbank entfernt.")
                                 del djs[dj_name]
                                 deleted += 1
@@ -122,6 +122,7 @@ def updateDB():
             json.dump(djs, f)
         day += 1
     logger.info(f"Datenbank erfolgreich aktualisiert! Neue Einträge:{new} Gelöschte Einträge:{deleted} Registrierte DJs:{new + dj_count}")
+    print (f"Datenbank erfolgreich aktualisiert! Neue Einträge:{new} Gelöschte Einträge:{deleted} Registrierte DJs:{new + dj_count}")
 
 while True:
     checkUpdate()

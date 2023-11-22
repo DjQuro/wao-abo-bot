@@ -146,49 +146,59 @@ def status(update, context):
     announcer = check_service_status("wao-announcer")
     commander = check_service_status("wao-commander")
     indexer = check_service_status("wao-index")
+    monitoring = check_service_status("botmon")
 
     with open("status.json") as statusfile:
         json_string = statusfile.read()
     statuslist = json.loads(json_string)
-    if statuslist['announcer'] <= 1 and announcer == 'active':
+    if statuslist['announcer'] <= config["maxErrorBeforeYellow"] and announcer == 'active':
         announcerindicator = '🟢'
     elif announcer != 'dead':
         announcerindicator = '🟡'
     else:
         announcerindicator = '🔴'
 
-    if statuslist['commander'] <= 1 and commander == 'active':
+    if statuslist['commander'] <= config["maxErrorBeforeYellow"] and commander == 'active':
         commanderindicator = '🟢'
     elif commander != 'dead':
         commanderindicator = '🟡'
     else:
         commanderindicator = '🔴'
 
-    if statuslist['indexer'] <= 1 and indexer == 'active':
+    if statuslist['indexer'] <= config["maxErrorBeforeYellow"] and indexer == 'active':
         indexerindicator = '🟢'
     elif indexer != 'dead':
         indexerindicator = '🟡'
     else:
         indexerindicator = '🔴'
+        
+    if statuslist['botmon'] <= config["maxErrorBeforeYellow"] and monitoring == 'active':
+        monitoringindicator = '🟢'
+    elif indexer != 'dead':
+        monitoringindicator = '🟡'
+    else:
+        monitoringindicator = '🔴'
 
-    if announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] == 0 and \
-            statuslist['commander'] == 0 and statuslist['indexer'] == 0:
+    if announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] <= config["maxErrorBeforeYellow"] and \
+            statuslist['commander'] <= config["maxErrorBeforeYellow"] and statuslist['indexer'] <= config["maxErrorBeforeYellow"]:
         message = (
             f"Verfügbarkeit der Dienste:\n\n"
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
-            f"{indexerindicator} - Indexer\n\n"
+            f"{indexerindicator} - Indexer\n"
+            f"{monitoringindicator} - Monitoring\n\n"
             f"Alle Dienste laufen Störungsfrei!"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
-    elif announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] >= 1 or \
-            statuslist['commander'] >= 1 or statuslist['indexer'] >= 1:
+    elif announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] >= config["maxErrorBeforeYellow"] or \
+            statuslist['commander'] >= config["maxErrorBeforeYellow"] or statuslist['indexer'] >= config["maxErrorBeforeYellow"]:
         message = (
             f"Verfügbarkeit der Dienste:\n\n"
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
-            f"{indexerindicator} - Indexer\n\n"
-            f"Aktuell liegt eine Störung vor!"
+            f"{indexerindicator} - Indexer\n"
+            f"{monitoringindicator} - Monitoring\n\n"
+            f"Aktuell können vereinzelte Störungen auftreten"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
     elif announcer == 'dead' or commander == 'dead' or indexer == 'dead':
@@ -196,7 +206,8 @@ def status(update, context):
             f"Verfügbarkeit der Dienste:\n\n"
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
-            f"{indexerindicator} - Indexer\n\n"
+            f"{indexerindicator} - Indexer\n"
+            f"{monitoringindicator} - Monitoring\n\n"
             f"Ein oder mehrere Dienste sind ausgefallen!"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
@@ -207,15 +218,6 @@ def konami_code(update, context):
     text = update.message.text.lower()
     if "hoch hoch runter runter links rechts links rechts b a" in text:
         context.bot.send_message(chat_id=id, text="Konami-Code erkannt!🕹️ WAO+ Abonnement freigeschaltet!")
-
-
-def gamble(update, context):
-    id = update.effective_chat.id
-    text = update.message.text
-    if text == "🎲":
-        context.bot.send_message(chat_id=id, text="🎲")
-    elif text == "🎰":
-        context.bot.send_message(chat_id=id, text="🎰")
 
 
 def get_stations_keyboard(update, context):
@@ -405,43 +407,10 @@ def setTime(update, context):
 
 def start(update, context):
     id = str(update.effective_chat.id)
-    if update.message.chat.type == "group" or update.message.chat.type == "supergroup":
-        user_id = update.message.from_user.id
-        chat_id = update.message.chat_id
-        user = context.bot.get_chat_member(chat_id, user_id)
-        if user.status in ["administrator", "creator"]:
-            logger.info(f"Welcoming {id}")
-            os.mkdir(f"data/{id}")
-            logger.info(f"Creating data/{id}")
-            subfile = f"data/{id}/subs.json"
-            f = open(subfile, 'w+')
-            f.write('{"subscriptions": []}')
-            f.close()
-            logger.info(f"Creating data/{id}/subs.json")
-            cachefile = f"data/{id}/cache.json"
-            f = open(cachefile, 'w+')
-            f.write('{"sent": []}')
-            f.close()
-            logger.info(f"Creating data/{id}/cache.json")
-            configfile = f"data/{id}/config.json"
-            f = open(configfile, 'w+')
-            f.write('{"minInfo": ' + config["defaultTime"] + '}')
-            f.close()
-            logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-            stationsfile = f"data/{id}/stations.json"
-            with open("stations.json") as preset:
-                json_string = preset.read()
-            f = open(stationsfile, 'w+')
-            f.write(json_string)
-            f.close()
-            logger.info(f"Creating data/{id}/stations.json")
-            logger.info("READY!")
-            context.bot.send_message(chat_id=id,
-                                     text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                          "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
-        else:
-            update.message.reply_text("Du bist kein Gruppenadmin")
-    else:
+    user_id = update.message.from_user.id
+    chat_id = update.message.chat_id
+    user = context.bot.get_chat_member(chat_id, user_id)
+    if user.status in ["administrator", "creator"]:
         logger.info(f"Welcoming {id}")
         os.mkdir(f"data/{id}")
         logger.info(f"Creating data/{id}")
@@ -466,11 +435,13 @@ def start(update, context):
         f = open(stationsfile, 'w+')
         f.write(json_string)
         f.close()
+        logger.info(f"Creating data/{id}/stations.json")
         logger.info("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                       "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
-
+    else:
+        update.message.reply_text("Du bist kein Gruppenadmin")
 
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
@@ -616,6 +587,9 @@ def ban(update, context):
             blacklistf.close()
             if dj in blacklist:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=f"{dj} ist bereits auf der Blacklist!")
+            elif dj in config["immune"]:
+                context.bot.send_message(chat_id=update.effective_chat.id, text=f"Ein Fehler ist beim Bannen von {dj} aufgetreten!")
+                logger.warning(f"{update.message.from_user.username} hat versucht {dj} zu bannen - DJ ist immunisiert")
             else:
                 blacklist.append(dj)
                 logger.warning(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
@@ -767,18 +741,23 @@ def button_unban(update, context):
         blacklist = json.load(f)
 
     # Entferne den DJ aus den Abonnements
-    blacklist["blacklist"].remove(dj)
+    if dj not in config["permaban"]:
+       blacklist["blacklist"].remove(dj)
 
-    # Speichere die aktualisierte Abonnementliste
-    with open(f"blacklist.json", "w") as f:
-        json.dump(blacklist, f)
+       # Speichere die aktualisierte Abonnementliste
+       with open(f"blacklist.json", "w") as f:
+           json.dump(blacklist, f)
 
-    # Lösche die vorherige Nachricht mit dem Inline-Keyboard
-    context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
+       # Lösche die vorherige Nachricht mit dem Inline-Keyboard
+       context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
 
-    # Sende eine Bestätigungsnachricht an den Benutzer
-    query.answer(text=f"{dj} wurde erfolgreich entbannt.")
-    logger.info(f"{dj} in {id} entbannt")
+       # Sende eine Bestätigungsnachricht an den Benutzer
+       query.answer(text=f"{dj} wurde erfolgreich entbannt.")
+       logger.info(f"{dj} durch {id} entbannt")
+
+    else:
+       logger.error(f'{dj} kann nicht entbannt werden! - Permabann!')
+       query.answer(text=f"Sorry... Aber das kann ich nicht zulassen!")
 
 
 def error(update, context):
@@ -786,14 +765,12 @@ def error(update, context):
         json_string = statusfile.read()
     statuslist = json.loads(json_string)
 
-    errors = statuslist['commander']
-
     """Log Errors caused by Updates."""
     logger.error('Update "%s" caused error "%s"', update, context.error)
     message = f'⚠️⚠️⚠️ STÖRUNG! - COMMANDER Update "{update}", Fehler "{context.error} - Nähere Infos in der logs.log"'
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
     requests.get(content)
-    errors += 1
+    statuslist['commander'] += 1
 
     # Schreibe die aktualisierte statuslist zurück in die Datei
     with open("status.json", "w") as statusfile:

@@ -45,8 +45,7 @@ def error(context):
     with open("status.json") as statusfile:
         json_string = statusfile.read()
     statuslist = json.loads(json_string)
-    errors = statuslist['announcer']
-    errors += 1
+    statuslist['announcer'] += 1
 
     # Schreibe die aktualisierte statuslist zurück in die Datei
     with open("status.json", "w") as statusfile:
@@ -56,12 +55,19 @@ def error(context):
     logger.error('Caused Error "%s"', error_msg)
 
     # Send error message
-    message = f'⚠️⚠️⚠️ STÖRUNG! - [ANNOUNCER] Fehler "{error_msg}" - Nähere Infos in der logs.log"'
+    message = f'⚠️⚠️⚠️ STÖRUNG! - [ANNOUNCER] Fehler "{error_msg}"'
     content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
     try:
         requests.get(content)
     except Exception as e:
         logger.error('Failed to send error message to Telegram. Error: %s', str(e))
+        with open("status.json") as statusfile:
+            json_string = statusfile.read()
+        statuslist = json.loads(json_string)
+        statuslist['announcer'] += 1
+        
+        with open("status.json", "w") as statusfile:
+            json.dump(statuslist, statusfile)
 
 
 def checkUpdate():
