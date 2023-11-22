@@ -29,17 +29,11 @@ def ban(dj):
                     json_string = json.dumps(data, indent=4)
                     blacklistf.write(json_string)
                 blacklistf.close()
-                handle_exception(f"{dj} has been blacklisted!")
+                print(f"{dj} has been blacklisted!")
         else:
-            handle_exception("You need to provide a name! Usage: python bcl.py ban [dj]")
+            print("You need to provide a name! Usage: ban [dj]")
     except Exception as e:
         handle_exception(f"Error in ban: {e}")
 
 def handle_exception(error_message):
     print(error_message)
-    time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    sys.exit()

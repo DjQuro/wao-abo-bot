@@ -9,38 +9,6 @@ from pathlib import Path
 import requests
 import glob
 import subprocess
-
-def status(arg=None):
-    try:
-        if arg:
-            if arg == "commander":
-                service = commander
-            elif arg == "announcer":
-                service = announcer
-            elif arg == "index" or arg == "indexer":
-                service = indexer
-            else:
-                handle_exception(f"Awww man... {arg} is not a service I know! Try commander, announcer, index or indexer")
-
-            command = f"systemctl status {service}.service"
-            output = os.popen(command).read()
-
-            # Check if the service is active
-            if "Active: active" in output:
-                print(f"{service} is active. Are you happy now?")
-            else:
-                print(f"Awww Shit! {service} is not active.")
-
-            # Extract and print the last error
-            error_start = output.find("Main PID:") + len("Main PID:")
-            error_end = output.find("\n", error_start)
-            last_error = output[error_start:error_end].strip()
-            print(f"Last error: {last_error}")
-        else:
-            handle_exception("Command 'status' requires a second argument, fool!")
-
-    except OSError as ose:
-        handle_exception("Error while running the command", ose)
         
 def restart(arg=None):
     try:

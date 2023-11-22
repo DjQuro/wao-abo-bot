@@ -6,7 +6,7 @@ import sys
 def install(arg=None):
     try:
         if os.path.exists(".installed"):
-            handle_exception("You don't need to use this command!")
+            print("You don't need to use this command!")
         else:
             # Service-Dateien installieren
             service_folder = "services"
@@ -44,8 +44,4 @@ def install(arg=None):
 def handle_exception(error_message):
     print(error_message)
     time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
     sys.exit()

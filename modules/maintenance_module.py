@@ -2,6 +2,8 @@ import json
 import os
 import sys
 import time
+import glob
+from datetime import datetime, timedelta
 
 def logclear(arg=None):
     try:
@@ -68,7 +70,7 @@ def logclear(arg=None):
             os.system("systemctl start wao-index.service")
             os.system("systemctl start botmon.service")
 
-            handle_exception("LOGCLEAR SUCCESSFUL!")
+            print("LOGCLEAR SUCCESSFUL!")
                     
     except Exception as e:
         handle_exception(f"Error in logclear: {e}")
@@ -116,15 +118,9 @@ def reset(arg=None):
             os.system("systemctl start wao-index.service")
             os.system("systemctl start botmon.service")
 
-            handle_exception("RESET SUCCESSFUL!")
+            print("RESET SUCCESSFUL!")
     except Exception as e:
         handle_exception(f"Error in reset: {e}")
         
 def handle_exception(error_message):
     print(error_message)
-    time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    sys.exit()

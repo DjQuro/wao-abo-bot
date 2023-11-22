@@ -89,16 +89,10 @@ def updatedb(arg=None):  # Updated function definition
                     json.dump(djs, f)
                 day += 1
 
-            handle_exception(f"Database update successful! New Entrys:{new} Purged Entrys:{deleted} Registered DJs:{new + dj_count}")
+            print(f"Database update successful! New Entrys:{new} Purged Entrys:{deleted} Registered DJs:{new + dj_count}")
 
     except Exception as e:
         handle_exception(f"Error in updateDB: {e}")
 
 def handle_exception(error_message):
     print(error_message)
-    time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    sys.exit()

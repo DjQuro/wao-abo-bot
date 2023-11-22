@@ -11,7 +11,7 @@ import requests
 import glob
 import subprocess
 from modules.help_module import help
-from modules.service_control_module import start, stop, restart, status
+from modules.service_control_module import start, stop, restart
 from modules.blacklist_handler import ban
 from modules.dbupdate_module import updatedb
 from modules.installer import install
@@ -49,35 +49,38 @@ def checkUpdate():
 
 def handle_exception(error_message):
     print(error_message)
-    time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    sys.exit()
+
 
 def process_command(command, argument):
-    if command == 'status':
-        status(argument)
-    elif command == 'ban':
-        ban(argument)
-    else:
-        globals()[command](argument)
+    globals()[command](argument)
     
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        handle_exception("Usage: python bcl.py <command> [argument]\nYou can use python bcl.py help for Commands")
+    # Überprüfe, ob Argumente übergeben wurden
+    if len(sys.argv) > 1:
+        # Wenn Argumente vorhanden sind, führe den Befehl aus
+        command = sys.argv[1]
+        argument = sys.argv[2] if len(sys.argv) > 2 else None
+        process_command(command, argument)
 
-    command = sys.argv[1]
-    argument = sys.argv[2] if len(sys.argv) > 2 else None
+        # Nach dem Ausführen des initialen Befehls ermöglicht es dem Benutzer, weitere Befehle einzugeben
+        while True:
+            user_input = input("Enter another command (or 'exit' to quit): ")
+            if user_input.lower() == 'exit':
+                break
+            elif user_input:
+                command, argument = user_input.split(maxsplit=1)
+                process_command(command, argument)
+    else:
+        # Wenn keine Argumente übergeben wurden, starte direkt in der Kommandozeile
+        while True:
+            user_input = input("Enter a command (or 'exit' to quit): ")
 
-    process_command(command, argument)
-
-    # Nach dem Ausführen des initialen Befehls, ermöglicht es dem Benutzer, weitere Befehle einzugeben
-    while True:
-        user_input = input("Enter another command (or 'exit' to quit): ")
-        if user_input.lower() == 'exit':
-            break
-        elif user_input:
-            command, argument = user_input.split(maxsplit=1)
-            process_command(command, argument)
+            if user_input.lower() == 'exit':
+                break
+            elif user_input:
+                if ' ' in user_input:
+                    command, argument = user_input.split(maxsplit=1)
+                else:
+                    command = user_input
+                    argument = None
+                    process_command(command, argument)

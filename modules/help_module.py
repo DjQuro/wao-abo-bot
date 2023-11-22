@@ -14,9 +14,3 @@ def help(arg=None):
         
 def handle_exception(error_message):
     print(error_message)
-    time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    sys.exit()
