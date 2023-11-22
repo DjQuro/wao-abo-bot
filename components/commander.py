@@ -148,7 +148,7 @@ def status(update, context):
     indexer = check_service_status("wao-index")
     monitoring = check_service_status("botmon")
 
-    with open("status.json") as statusfile:
+    with open("/root/WAO-Abobot/status.json") as statusfile:
         json_string = statusfile.read()
     statuslist = json.loads(json_string)
     if statuslist['announcer'] <= config["maxErrorBeforeYellow"] and announcer == 'active':
