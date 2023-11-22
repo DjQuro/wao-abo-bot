@@ -11,16 +11,16 @@ from pathlib import Path
 
 import requests
 
-with open("versions.json") as versionfile:
+with open("/root/WAO-Abobot/versions.json") as versionfile:
     version_string = versionfile.read()
 versions = json.loads(version_string)
 versionfile.close()
 
-with open("config.json") as f:
+with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
 
-with open("blacklist.json") as bansjson:
+with open("/root/WAO-Abobot/blacklist.json") as bansjson:
     json_string = bansjson.read()
 blacklist = json.loads(json_string)
 
@@ -42,13 +42,13 @@ logger.addHandler(stdout_handler)
 
 def error(context):
     """Log Errors caused by Updates."""
-    with open("status.json") as statusfile:
+    with open("/root/WAO-Abobot/status.json") as statusfile:
         json_string = statusfile.read()
     statuslist = json.loads(json_string)
     statuslist['announcer'] += 1
 
     # Schreibe die aktualisierte statuslist zurück in die Datei
-    with open("status.json", "w") as statusfile:
+    with open("/root/WAO-Abobot/status.json", "w") as statusfile:
         json.dump(statuslist, statusfile)
 
     error_msg = context.get("error", "Unbekannter Fehler")
@@ -61,12 +61,12 @@ def error(context):
         requests.get(content)
     except Exception as e:
         logger.error('Failed to send error message to Telegram. Error: %s', str(e))
-        with open("status.json") as statusfile:
+        with open("/root/WAO-Abobot/status.json") as statusfile:
             json_string = statusfile.read()
         statuslist = json.loads(json_string)
         statuslist['announcer'] += 1
         
-        with open("status.json", "w") as statusfile:
+        with open("/root/WAO-Abobot/status.json", "w") as statusfile:
             json.dump(statuslist, statusfile)
 
 
@@ -88,7 +88,7 @@ def checkUpdate():
 
 
 # Create the base URL string
-with open("stations.json") as f:
+with open("/root/WAO-Abobot/stations.json") as f:
     stationlist = json.load(f)
 
 base_url = "https://api.weareone.fm/v1/showplan/{station}/1"
@@ -112,21 +112,21 @@ def newday():
 
 
 def check():
-    rootdir = 'data'
+    rootdir = '/root/WAO-Abobot/data'
     for subdir in os.scandir(rootdir):
         if subdir.is_dir():
             chatid = subdir.name
             try:
-                with open(f"data/{chatid}/subs.json") as s:
+                with open(f"/root/WAO-Abobot/data/{chatid}/subs.json") as s:
                     subs = json.load(s)
-                with open(f"data/{chatid}/config.json") as c:
+                with open(f"/root/WAO-Abobot/data/{chatid}/config.json") as c:
                     chatConfig = json.load(c)
                     minTime = chatConfig['minInfo'] * 60
-                with open(f'data/{chatid}/stations.json') as s:
+                with open(f'/root/WAO-Abobot/data/{chatid}/stations.json') as s:
                     stationslist = json.load(s)
                     stations = stationslist["stations"]
 
-                cache_file = Path(f"data/{chatid}/cache.json")
+                cache_file = Path(f"/root/WAO-Abobot/data/{chatid}/cache.json")
                 if cache_file.is_file():
                     with open(cache_file) as sentShows:
                         sent = json.load(sentShows)["sent"]

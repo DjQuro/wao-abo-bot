@@ -5,10 +5,10 @@ Conflicts=getty@tty1.service
  
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /root/WAO-Abobot/index.py
+ExecStart=/usr/bin/python3 /root/WAO-Abobot/components/index.py
 User=root
 Restart=always
-WorkingDirectory=/root/WAO-Abobot/
+WorkingDirectory=/root/WAO-Abobot/components/
  
 [Install]
 WantedBy=multi-user.target

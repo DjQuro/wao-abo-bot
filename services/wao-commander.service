@@ -5,8 +5,8 @@ Conflicts=getty@tty1.service
  
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /root/WAO-Abobot/commander.py
-WorkingDirectory=/root/WAO-Abobot/
+ExecStart=/usr/bin/python3 /root/WAO-Abobot/components/commander.py
+WorkingDirectory=/root/WAO-Abobot/components/
 Restart=always
 User=root
  

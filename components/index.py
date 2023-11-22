@@ -11,16 +11,16 @@ from pathlib import Path
 
 import requests
 
-with open("versions.json") as versionfile:
+with open("/root/WAO-Abobot/versions.json") as versionfile:
     version_string = versionfile.read()
 versions = json.loads(version_string)
 versionfile.close()
 
-with open("config.json") as f:
+with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
 
-djs_file = "djs.json"
+djs_file = "/root/WAO-Abobot/djs.json"
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -30,14 +30,14 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
-file_handler = logging.FileHandler('logs.log')
+file_handler = logging.FileHandler('/root/WAO-Abobot/logs.log')
 file_handler.setLevel(logging.WARNING)
 file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(stdout_handler)
 
-with open("stations.json") as f:
+with open("/root/WAO-Abobot/stations.json") as f:
     stationlist = json.load(f)
 stations = stationlist["stations"]
 
@@ -63,7 +63,7 @@ def updateDB():
     deleted = 0
     base_url = "https://api.weareone.fm/v1/showplan/{station}/{day}"
     logger.info("Datenbank wird aktualisiert!")
-    with open("blacklist.json") as blacklistfile:
+    with open("/root/WAO-Abobot/blacklist.json") as blacklistfile:
        json_string = blacklistfile.read()
     blacklist = json.loads(json_string)
 
@@ -122,7 +122,6 @@ def updateDB():
             json.dump(djs, f)
         day += 1
     logger.info(f"Datenbank erfolgreich aktualisiert! Neue Einträge:{new} Gelöschte Einträge:{deleted} Registrierte DJs:{new + dj_count}")
-    print (f"Datenbank erfolgreich aktualisiert! Neue Einträge:{new} Gelöschte Einträge:{deleted} Registrierte DJs:{new + dj_count}")
 
 while True:
     checkUpdate()

@@ -29,17 +29,17 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(stdout_handler)
 
-with open("config.json") as f:
+with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
 f.close()
 
-with open("versions.json") as versionfile:
+with open("/root/WAO-Abobot/versions.json") as versionfile:
     version_string = versionfile.read()
 versions = json.loads(version_string)
 versionfile.close()
 
-with open("blacklist.json") as blacklistfile:
+with open("/root/WAO-Abobot/blacklist.json") as blacklistfile:
     json_string = blacklistfile.read()
 blacklist = json.loads(json_string)
 
@@ -68,24 +68,24 @@ def init():
         id = 13370815
         logger.warning("Test-Mode Enabled!")
         logger.info(f"Welcoming {id}")
-        os.mkdir(f"data/{id}")
-        logger.info(f"Creating data/{id}")
-        subfile = f"data/{id}/subs.json"
+        os.mkdir(f"/root/WAO-Abobot/data/{id}")
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}")
+        subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
         f = open(subfile, 'w+')
         f.write('{"subscriptions": []}')
         f.close()
-        logger.info(f"Creating data/{id}/subs.json")
-        cachefile = f"data/{id}/cache.json"
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
+        cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
         f = open(cachefile, 'w+')
         f.write('{"sent": []}')
         f.close()
-        logger.info(f"Creating data/{id}/cache.json")
-        configfile = f"data/{id}/config.json"
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
+        configfile = f"/root/WAO-Abobot/data/{id}/config.json"
         f = open(configfile, 'w+')
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
-        logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-        stationsfile = f"data/{id}/stations.json"
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
         with open("data/318491860/stations.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
@@ -222,7 +222,7 @@ def konami_code(update, context):
 
 def get_stations_keyboard(update, context):
     chat_id = update.effective_chat.id
-    stations_file = f"data/{chat_id}/stations.json"
+    stations_file = f"/root/WAO-Abobot/data/{chat_id}/stations.json"
     sender_file = "sender.json"
 
     with open(stations_file, "r") as file:
@@ -246,8 +246,8 @@ def get_stations_keyboard(update, context):
 
 def handle_station_subscription(update, context):
     chat_id = update.callback_query.message.chat_id
-    stations_file = f"data/{chat_id}/stations.json"
-    sender_file = "sender.json"
+    stations_file = f"/root/WAO-Abobot/data/{chat_id}/stations.json"
+    sender_file = "/root/WAO-Abobot/sender.json"
     callback_data = update.callback_query.data
     sender_name = callback_data.split("_")[-1]
 
@@ -278,7 +278,7 @@ def announce(update, context):
     id = str(update.effective_chat.id)
     if id == config["adminID"]:
         message = " ".join(context.args)
-        rootdir = 'data'
+        rootdir = '/root/WAO-Abobot/data'
         for rootdir, dirs, files in os.walk(rootdir):
             for subdir in dirs:
                 chatid = os.path.join(subdir)
@@ -359,17 +359,17 @@ def setTime(update, context):
                         update.message.reply_text(
                             "Bitte wähle einen Wert zwischen 1 und 1440.")
                     else:
-                        userConfig = f"data/{id}/config.json"
+                        userConfig = f"/root/WAO-Abobot/data/{id}/config.json"
                         f = open(userConfig, 'w+')
                         f.write('{"minInfo": ' + str(minutes) + '}')
                         f.close()
-                        with open(f"data/{id}/config.json") as userConfig:
+                        with open(f"/root/WAO-Abobot/data/{id}/config.json") as userConfig:
                             json_string = userConfig.read()
                         conf = json.loads(json_string)
                         update.message.reply_text(
                             f"Die frühste Benachrichtigung ist auf {conf['minInfo']} Minuten eingestellt.")
             else:
-                with open(f"data/{id}/config.json") as userConfig:
+                with open(f"/root/WAO-Abobot/data/{id}/config.json") as userConfig:
                     json_string = userConfig.read()
                 conf = json.loads(json_string)
                 update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
@@ -377,7 +377,7 @@ def setTime(update, context):
             if minutes:
                 update.message.reply_text("Du bist kein Gruppenadmin")
             else:
-                with open(f"data/{id}/config.json") as userConfig:
+                with open(f"/root/WAO-Abobot/data/{id}/config.json") as userConfig:
                     json_string = userConfig.read()
                 conf = json.loads(json_string)
                 update.message.reply_text(
@@ -393,13 +393,13 @@ def setTime(update, context):
                     update.message.reply_text(
                         "Bitte wähle einen Wert zwischen 1 und 1440.")
                 else:
-                    userConfig = f"data/{id}/config.json"
+                    userConfig = f"/root/WAO-Abobot/data/{id}/config.json"
                     f = open(userConfig, 'w+')
                     f.write('{"minInfo": ' + str(minutes) + '}')
                     f.close()
                     update.message.reply_text(f"Frühste Benachrichtigung auf {str(minutes)} Minuten gesetzt")
         else:
-            with open(f"data/{id}/config.json") as userConfig:
+            with open(f"/root/WAO-Abobot/data/{id}/config.json") as userConfig:
                 json_string = userConfig.read()
             conf = json.loads(json_string)
             update.message.reply_text(f"Die frühste Benachrichtigung bleibt bei {conf['minInfo']} Minuten!")
@@ -412,30 +412,30 @@ def start(update, context):
     user = context.bot.get_chat_member(chat_id, user_id)
     if user.status in ["administrator", "creator"]:
         logger.info(f"Welcoming {id}")
-        os.mkdir(f"data/{id}")
-        logger.info(f"Creating data/{id}")
-        subfile = f"data/{id}/subs.json"
+        os.mkdir(f"/root/WAO-Abobot/data/{id}")
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}")
+        subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
         f = open(subfile, 'w+')
         f.write('{"subscriptions": []}')
         f.close()
-        logger.info(f"Creating data/{id}/subs.json")
-        cachefile = f"data/{id}/cache.json"
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
+        cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
         f = open(cachefile, 'w+')
         f.write('{"sent": []}')
         f.close()
-        logger.info(f"Creating data/{id}/cache.json")
-        configfile = f"data/{id}/config.json"
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
+        configfile = f"/root/WAO-Abobot/data/{id}/config.json"
         f = open(configfile, 'w+')
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
-        logger.info(f"Creating data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-        stationsfile = f"data/{id}/stations.json"
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
         with open("stations.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
         f.write(json_string)
         f.close()
-        logger.info(f"Creating data/{id}/stations.json")
+        logger.info(f"Creating /root/WAO-Abobot/data/{id}/stations.json")
         logger.info("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
@@ -449,7 +449,7 @@ def unsubscribe(update, context):
     logger.info(f"{username}@{id} ran unsubscribe")
 
     # Lade die Liste der abonnierten DJs
-    with open(f"data/{id}/subs.json") as f:
+    with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
         subs = json.load(f)
     subscribed_djs = subs["subscriptions"]
 
@@ -483,14 +483,14 @@ def button_unsubscribe(update, context):
     id = str(query.message.chat_id)
 
     # Lade die vorhandenen Abonnements des Benutzers
-    with open(f"data/{id}/subs.json") as f:
+    with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
         subs = json.load(f)
 
     # Entferne den DJ aus den Abonnements
     subs["subscriptions"].remove(dj)
 
     # Speichere die aktualisierte Abonnementliste
-    with open(f"data/{id}/subs.json", "w") as f:
+    with open(f"/root/WAO-Abobot/data/{id}/subs.json", "w") as f:
         json.dump(subs, f)
 
     # L�sche die vorherige Nachricht mit dem Inline-Keyboard
@@ -507,7 +507,7 @@ def subscribe(update, context):
     logger.info(f"{username}@{id} ran subscribe")
 
     # Lade die Liste der abonnierten DJs
-    with open(f"data/{id}/subs.json") as f:
+    with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
         subs = json.load(f)
 
     # Stelle sicher, dass der Schlüssel "subscriptions" in der subs.json-Datei vorhanden ist
@@ -551,7 +551,7 @@ def button_subscribe(update, context):
     id = str(query.message.chat_id)
 
     # Lade die vorhandenen Abonnements des Benutzers
-    with open(f"data/{id}/subs.json") as f:
+    with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
         subs = json.load(f)
 
     # Füge den neuen DJ zum Abonnement hinzu, wenn er noch nicht abonniert ist
@@ -559,7 +559,7 @@ def button_subscribe(update, context):
         subs["subscriptions"].append(dj)
 
         # Speichere die aktualisierte Abonnementliste
-        with open(f"data/{id}/subs.json", "w") as f:
+        with open(f"/root/WAO-Abobot/data/{id}/subs.json", "w") as f:
             json.dump(subs, f)
 
         # Lösche die vorherige Nachricht mit dem Inline-Keyboard
@@ -580,7 +580,7 @@ def ban(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="KEINE BERECHTIGUNG!")
     else:
         if dj:
-            with open("blacklist.json") as blacklistf:
+            with open("/root/WAO-Abobot/blacklist.json") as blacklistf:
                 json_string = blacklistf.read()
             blacklistArray = json.loads(json_string)
             blacklist = blacklistArray["blacklist"]
@@ -593,7 +593,7 @@ def ban(update, context):
             else:
                 blacklist.append(dj)
                 logger.warning(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
-                with open(f"blacklist.json", "w") as blacklistf:
+                with open(f"/root/WAO-Abobot/blacklist.json", "w") as blacklistf:
                     data = {
                         "blacklist": blacklist
                     }
@@ -609,7 +609,7 @@ def ban(update, context):
 def checksubs(update, context):
     id = str(update.effective_chat.id)
     showCount = 0
-    with open(f"data/{id}/stations.json") as f:
+    with open(f"/root/WAO-Abobot/data/{id}/stations.json") as f:
         json_string = f.read()
         stationlist = json.loads(json_string)
 
