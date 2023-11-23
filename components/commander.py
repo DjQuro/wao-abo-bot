@@ -651,7 +651,7 @@ def list_subs(update, context):
     chat_id = str(update.effective_chat.id)
     i = 0
     subnames = []
-    with open(f"data/{chat_id}/subs.json") as subfile:
+    with open(f"/root/WAO-Abobot/data/{chat_id}/subs.json") as subfile:
         json_string = subfile.read()
     subs = json.loads(json_string)
     for sub in subs["subscriptions"]:
