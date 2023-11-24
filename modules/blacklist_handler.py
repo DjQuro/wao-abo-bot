@@ -3,14 +3,14 @@ import os
 import sys
 import time
 
-with open("config.json") as f:
+with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
 
 def ban(dj):
     try:
         if dj:
-            with open("blacklist.json") as blacklistf:
+            with open("/root/WAO-Abobot/blacklist.json") as blacklistf:
                 json_string = blacklistf.read()
             blacklistArray = json.loads(json_string)
             blacklist = blacklistArray["blacklist"]
@@ -22,7 +22,7 @@ def ban(dj):
                 
             else:
                 blacklist.append(dj)
-                with open(f"blacklist.json", "w") as blacklistf:
+                with open(f"/root/WAO-Abobot/blacklist.json", "w") as blacklistf:
                     data = {
                         "blacklist": blacklist
                     }

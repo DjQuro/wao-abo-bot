@@ -5,11 +5,11 @@ import sys
 
 def install(arg=None):
     try:
-        if os.path.exists(".installed"):
+        if os.path.exists("/root/WAO-Abobot/.installed"):
             print("You don't need to use this command!")
         else:
             # Service-Dateien installieren
-            service_folder = "services"
+            service_folder = "/root/WAO-Abobot/services"
             for service_file in os.listdir(service_folder):
                 full_path = os.path.join(service_folder, service_file)
                 if os.path.isfile(full_path) and full_path.endswith(".service"):
@@ -36,7 +36,7 @@ def install(arg=None):
                 if service_file.endswith(".service"):
                     subprocess.run(["sudo", "systemctl", "restart", os.path.basename(service_file, ".service")])
 
-            subprocess.run(["touch", ".installed"])
+            subprocess.run(["touch", "/root/WAO-Abobot/.installed"])
             handle_exception("Installation successful!")
     except Exception as e:
         handle_exception(f"Installation FAILED! {e}")

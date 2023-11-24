@@ -8,15 +8,15 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import requests
 
-with open("stations.json") as f:
+with open("/root/WAO-Abobot/stations.json") as f:
     stationlist = json.load(f)
 stations = stationlist["stations"]
 
-with open("config.json") as f:
+with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
 
-djs_file = "djs.json"
+djs_file = "/root/WAO-Abobot/djs.json"
 
 def updatedb(arg=None):  # Updated function definition
     try:

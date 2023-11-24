@@ -9,13 +9,6 @@ def logclear(arg=None):
     try:
         if arg:
             print(f"What the f**k does {arg} mean you fool?")
-            time.sleep(5)
-            # Clear the terminal based on the operating system
-            if os.name == 'nt':  # Windows
-                os.system('cls')
-            else:  # Unix-based systems
-                os.system('clear')
-            sys.exit()
         else:
             print("PLEASE WAIT! BOT WILL RESTART!...")
 

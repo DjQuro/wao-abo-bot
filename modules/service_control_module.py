@@ -1,14 +1,5 @@
-import json
 import os
 import sys
-import time
-import urllib
-import urllib.parse
-from datetime import datetime, timedelta
-from pathlib import Path
-import requests
-import glob
-import subprocess
         
 def restart(arg=None):
     try:
@@ -92,9 +83,3 @@ def stop(arg=None):
 
 def handle_exception(error_message):
     print(error_message)
-    time.sleep(5)
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    sys.exit()

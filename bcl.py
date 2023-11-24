@@ -17,10 +17,10 @@ from modules.dbupdate_module import updatedb
 from modules.installer import install
 from modules.maintenance_module import reset, logclear
 
-with open("data/banner.txt", "r") as banner_file:
+with open("/root/WAO-Abobot/data/banner.txt", "r") as banner_file:
     banner_content = banner_file.read()
 
-with open("versions.json") as versionfile:
+with open("/root/WAO-Abobot/versions.json") as versionfile:
     version_string = versionfile.read()
 versions = json.loads(version_string)
 versionfile.close()
