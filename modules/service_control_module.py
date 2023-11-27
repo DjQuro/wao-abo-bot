@@ -1,6 +1,10 @@
 import os
 import sys
-        
+
+commander = "wao-commander"
+announcer = "wao-announcer"
+indexer = "wao-indexer"
+
 def restart(arg=None):
     try:
         if arg:
