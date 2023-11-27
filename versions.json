@@ -1,5 +1,6 @@
 {
   "announcer": "v2.8.0",
   "commander": "v1.6.1",
-  "indexer": "v1.2.0"
+  "indexer": "v1.2.0",
+  "bcl": "v1.0.0"
 }
