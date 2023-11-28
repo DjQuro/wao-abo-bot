@@ -35,11 +35,11 @@ component = "commander"
 def init():
 
     if config['bot_token'] == "<yourbottokenhere>":
-        error("Invalid Bot Token")
+        print("Invalid Bot Token")
     else:
         print(f"Authorized with {config['bot_token']} Starting!")
         if config['adminID'] == "<adminchatidhere>":
-            error("Invalid Admin Chat ID - These are required for Announce and Error Reporting!")
+            print("Invalid Admin Chat ID - These are required for Announce and Error Reporting!")
             update_available = checkUpdate(component)   
 
             if update_available:

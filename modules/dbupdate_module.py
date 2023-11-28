@@ -24,10 +24,13 @@ def updatedb(arg=None):  # Updated function definition
             handle_exception(f"What the f**k does {arg} mean you fool?")
         else:
             print(f"Thinking, Please wait...")
+            print("Loading...")
             day = 0
             new = 0
             dj_count = 0
             deleted = 0
+            dj_name = ""
+            last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             base_url = "https://api.weareone.fm/v1/showplan/{station}/{day}"
             with open("blacklist.json") as blacklistfile:
                  json_string = blacklistfile.read()
@@ -45,6 +48,8 @@ def updatedb(arg=None):  # Updated function definition
                     endpoint_url = base_url.format(station=id, day=day)
                     response = requests.get(endpoint_url)
                     status = str(response.status_code)
+                    print('\033[F', end='', flush=True)
+                    print(f"GET {endpoint_url}")
 
                     if response.ok:
                         data = response.json()
@@ -52,43 +57,37 @@ def updatedb(arg=None):  # Updated function definition
                         # Aktualisiere alle Einträge der Station
                         for entry in data:
                             dj_name = entry['m']
-                            last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        
+                            # Prüfe, ob DJ bereits in djs.json existiert und nicht auf der Blacklist steht
+                            if dj_name not in djs and dj_name not in blacklist['blacklist']:
+                                last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                djs[dj_name] = {"last_seen": last_seen}
+                                new += 1
+                            else:
+                                if dj_name in djs:
+                                    # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
+                                    if datetime.strptime(djs[dj_name]["last_seen"], "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(config["maxInactivityDays"]) and djs[dj_name] not in config["immune"]:
+                                        del djs[dj_name]
+                                        deleted += 1
+                                        dj_count -= 1
+                                    # Prüfe, ob DJ gebannt wurde
+                                    elif dj_name in blacklist['blacklist']:
+                                        del djs[dj_name]
+                                        deleted += 1
+                                        dj_count -= 1
+                                    else:
+                                        djs[dj_name]["last_seen"] = last_seen
+                                        dj_count += 1
 
-                    # Prüfe, ob DJ bereits in djs.json existiert und nicht auf der Blacklist steht
-                        if dj_name not in djs and dj_name not in blacklist['blacklist']:
-                            djs[dj_name] = {"last_seen": last_seen}
-                            new += 1
-                        else:
-                            if dj_name in djs:
-                                dj_count += 1
-                                # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
-                                if datetime.strptime(djs[dj_name]["last_seen"], "%Y-%m-%d %H:%M:%S") < datetime.now() - timedelta(config["maxInactivityDays"]) and djs[dj_name] not in config["immune"]:
-                                    del djs[dj_name]
-                                    deleted += 1
-                                    dj_count -= 1
-                                # Prüfe, ob DJ gebannt wurde
-                                elif dj_name in blacklist['blacklist']:
-                                    del djs[dj_name]
-                                    deleted += 1
-                                    dj_count -= 1
-                                else:
-                                    djs[dj_name]["last_seen"] = last_seen
 
                     else:
                         print(f"ERROR {status} from  {endpoint_url}")
-                        time.sleep(5)
-                        # Clear the terminal based on the operating system
-                        if os.name == 'nt':  # Windows
-                            os.system('cls')
-                        else:  # Unix-based systems
-                            os.system('clear')
-                        sys.exit()
 
                 # Speichere die aktualisierte djs.json
                 with open(djs_file, "w") as f:
                     json.dump(djs, f)
                 day += 1
-
+            print('\033[F', end='', flush=True)
             print(f"Database update successful! New Entrys:{new} Purged Entrys:{deleted} Registered DJs:{new + dj_count}")
 
     except Exception as e:
