@@ -53,7 +53,7 @@ def getUpdate(arg=None):
     update_available_commander = checkUpdate('commander')
     update_available_announcer = checkUpdate('announcer')
     update_available_bcl = checkUpdate('bcl')
-    if update_available_commander or update_available_announce or update_available_bcl:
+    if update_available_commander or update_available_announcer or update_available_bcl:
         backup()
         stop()
         try:
