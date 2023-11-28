@@ -1,7 +1,7 @@
 {
-   "bot_token":"5993608535:AAEzIwW-S79KM3Mv7VCUcgbZfo1nslfg-4U",
+   "bot_token":"<yourbottokenhere>",
    "defaultTime":"15",
-   "adminID":"318491860",
+   "adminID":"<adminchatidhere>",
    "maxInactivityDays":30,
    "maintenance":{
       "active":false,
