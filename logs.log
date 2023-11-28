@@ -1,17 +1,1 @@
-[ 2023-11-28 08:28:38,027 - INFO ] Scheduler started
-[ 2023-11-28 08:28:40,162 - INFO ] Received signal 2 (SIGINT), stopping...
-[ 2023-11-28 08:28:40,163 - INFO ] Scheduler has been shut down
-[ 2023-11-28 08:28:44,194 - WARNING ] Exiting immediately!
-[ 2023-11-28 08:28:50,398 - INFO ] Scheduler started
-[ 2023-11-28 08:44:37,369 - INFO ] Received signal 15 (SIGTERM), stopping...
-[ 2023-11-28 08:44:37,371 - INFO ] Scheduler has been shut down
-[ 2023-11-28 08:44:42,719 - INFO ] Scheduler started
-[ 2023-11-28 09:30:15,235 - INFO ] Received signal 15 (SIGTERM), stopping...
-[ 2023-11-28 09:30:15,237 - INFO ] Scheduler has been shut down
-[ 2023-11-28 09:30:32,698 - INFO ] Scheduler started
-[ 2023-11-28 10:04:59,678 - INFO ] Received signal 15 (SIGTERM), stopping...
-[ 2023-11-28 10:04:59,682 - INFO ] Scheduler has been shut down
-[ 2023-11-28 10:05:36,776 - INFO ] Scheduler started
-[ 2023-11-28 10:09:07,392 - INFO ] Received signal 15 (SIGTERM), stopping...
-[ 2023-11-28 10:09:07,393 - INFO ] Scheduler has been shut down
-[ 2023-11-28 10:13:12,681 - INFO ] Scheduler started
+
