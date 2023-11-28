@@ -1,9 +1,9 @@
 {
-	"bot_token":"<Bottoken here>",
-  "defaultTime": "15",
-	"adminID": "<AdminID here>",
-  "testmode": false
-     "maintenance":{
+   "bot_token":"5993608535:AAEzIwW-S79KM3Mv7VCUcgbZfo1nslfg-4U",
+   "defaultTime":"15",
+   "adminID":"318491860",
+   "maxInactivityDays":30,
+   "maintenance":{
       "active":false,
       "sheduledMaintenance":false,
       "activeMessage":"Wartungsarbeiten aktiv",
@@ -11,7 +11,10 @@
    },
    "immune":[
       "Quro",
-      "G4bby"
+      "G4bby",
+      "DjDenny",
+      "BitPitcher",
+      "Hatchel"
    ],
    "permaban":[
    ],

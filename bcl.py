@@ -16,6 +16,9 @@ from modules.blacklist_handler import ban
 from modules.dbupdate_module import updatedb
 from modules.installer import install
 from modules.maintenance_module import reset, logclear
+from modules.public_announce import announce
+from modules.update_module import checkUpdate, update, getUpdate
+from modules.backup_module import backup
 
 with open("/root/WAO-Abobot/data/banner.txt", "r") as banner_file:
     banner_content = banner_file.read()
@@ -24,28 +27,16 @@ with open("/root/WAO-Abobot/versions.json") as versionfile:
     version_string = versionfile.read()
 versions = json.loads(version_string)
 versionfile.close()
+component = "bcl"
 
 print(banner_content)
-print(f"                                                 Bot Command Line Version: {versions['bcl']}")
 
-commander = "wao-commander"
-announcer = "wao-announcer"
-indexer = "wao-index"
-index = "wao-index"
+update_available = checkUpdate(component)
 
-def checkUpdate():
-    response = requests.get("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json")
-    status = str(response.status_code)
-    if response.ok:
-        with urllib.request.urlopen(
-                "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-            rem_version_string = remoteVersion.read()
-            remoteVersion = json.loads(rem_version_string)
-        if versions['bcl'] != remoteVersion['bcl']:
-            print(
-                f"Installed Announcer-Version: {versions['announcer']} - Please Update! (New Version: {remoteVersion['bcl']})")
-    else:
-        print(f"Update-Check failed! ERROR: {status}")
+if update_available:
+    print(f"                                                 Bot Command Line Version: {versions['bcl']}\n                                                 New Update available!")
+else:
+    print(f"                                                 Bot Command Line Version: {versions['bcl']}\n")
 
 def handle_exception(error_message):
     print(error_message)

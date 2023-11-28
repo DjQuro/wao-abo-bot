@@ -8,26 +8,13 @@ import time
 import urllib
 import urllib.parse
 import requests
-# import wao.api
-
+import traceback
 from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('[ %(asctime)s - %(levelname)s - Commander] %(message)s')
-
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(formatter)
-
-file_handler = logging.FileHandler('/root/WAO-Abobot/logs.log')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(stdout_handler)
+from scripts.update_check import checkUpdate
+from scripts.error import error
+from scripts.status import status, check_service_status
 
 with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
@@ -43,64 +30,22 @@ with open("/root/WAO-Abobot/blacklist.json") as blacklistfile:
     json_string = blacklistfile.read()
 blacklist = json.loads(json_string)
 
-
-def checkUpdate():
-    response = requests.get("https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json")
-    status = str(response.status_code)
-    if response.ok:
-        with urllib.request.urlopen(
-                "https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json") as remoteVersion:
-            rem_version_string = remoteVersion.read()
-            remoteVersion = json.loads(rem_version_string)
-
-        if versions['commander'] == remoteVersion['commander']:
-            logger.info(f"Installed Commander-Version: {versions['commander']} - Up to Date!")
-        else:
-            logger.info(
-                f"Installed Commander-Version: {versions['commander']} - Please to Version: {remoteVersion['commander']})")
-    else:
-        logger.error(
-            f"Update failed! ERROR {status}")
-
+component = "commander"
 
 def init():
-    if config['testmode']:
-        id = 13370815
-        logger.warning("Test-Mode Enabled!")
-        logger.info(f"Welcoming {id}")
-        os.mkdir(f"/root/WAO-Abobot/data/{id}")
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}")
-        subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
-        f = open(subfile, 'w+')
-        f.write('{"subscriptions": []}')
-        f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
-        cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
-        f = open(cachefile, 'w+')
-        f.write('{"sent": []}')
-        f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
-        configfile = f"/root/WAO-Abobot/data/{id}/config.json"
-        f = open(configfile, 'w+')
-        f.write('{"minInfo": ' + config["defaultTime"] + '}')
-        f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-        stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
-        with open("data/318491860/stations.json") as preset:
-            json_string = preset.read()
-        f = open(stationsfile, 'w+')
-        f.write(json_string)
-        f.close()
-        logger.info("READY!")
+
+    if config['bot_token'] == "<yourbottokenhere>":
+        error("Invalid Bot Token")
     else:
-        if config['bot_token'] == "<yourbottokenhere>":
-            logger.error("Invalid Bot Token")
-        else:
-            logger.info(f"Authorized with {config['bot_token']} Starting!")
-            if config['adminID'] == "<adminchatidhere>":
-                logger.error("Invalid Admin Chat ID - These are required for Announce and Error Reporting!")
-            checkUpdate()
-            main()
+        print(f"Authorized with {config['bot_token']} Starting!")
+        if config['adminID'] == "<adminchatidhere>":
+            error("Invalid Admin Chat ID - These are required for Announce and Error Reporting!")
+            update_available = checkUpdate(component)   
+
+            if update_available:
+                print(f"Installed Commander version: {versions[component]} - Up to Date!")
+            else:
+                print(f"Installed Commander version: {versions[component]} - Please Update!")
 
 
 def main():
@@ -118,7 +63,6 @@ def main():
     dp.add_handler(CommandHandler('time', setTime))
     dp.add_handler(CommandHandler('announce', announce))
     dp.add_handler(CommandHandler('live', now_live))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, konami_code))
     dp.add_handler(CallbackQueryHandler(live_button, pattern='^live_'))
     dp.add_handler(CommandHandler('stations', get_stations_keyboard))
     dp.add_handler(CallbackQueryHandler(handle_station_subscription, pattern=r"toggle_station_.*"))
@@ -126,104 +70,19 @@ def main():
     dp.add_handler(CommandHandler('banlist', list_bans))
     dp.add_handler(CommandHandler('unban', unban))
     dp.add_handler(CallbackQueryHandler(button_unban, pattern='^unban_'))
-    dp.add_handler(CommandHandler('status', status))
+    dp.add_handler(CommandHandler('status', call_status))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
 
-
-def check_service_status(service_name):
-    try:
-        result = subprocess.run(['systemctl', 'is-active', service_name], capture_output=True, text=True, check=True)
-        status = result.stdout.strip()
-        return 'active' if status == 'active' else 'dead'
-    except subprocess.CalledProcessError:
-        return 'dead'
-
-
-def status(update, context):
-    chat_id = update.effective_chat.id
-    announcer = check_service_status("wao-announcer")
-    commander = check_service_status("wao-commander")
-    indexer = check_service_status("wao-index")
-    monitoring = check_service_status("botmon")
-
-    with open("/root/WAO-Abobot/status.json") as statusfile:
-        json_string = statusfile.read()
-    statuslist = json.loads(json_string)
-    if statuslist['announcer'] <= config["maxErrorBeforeYellow"] and announcer == 'active':
-        announcerindicator = '🟢'
-    elif announcer != 'dead':
-        announcerindicator = '🟡'
-    else:
-        announcerindicator = '🔴'
-
-    if statuslist['commander'] <= config["maxErrorBeforeYellow"] and commander == 'active':
-        commanderindicator = '🟢'
-    elif commander != 'dead':
-        commanderindicator = '🟡'
-    else:
-        commanderindicator = '🔴'
-
-    if statuslist['indexer'] <= config["maxErrorBeforeYellow"] and indexer == 'active':
-        indexerindicator = '🟢'
-    elif indexer != 'dead':
-        indexerindicator = '🟡'
-    else:
-        indexerindicator = '🔴'
-        
-    if statuslist['botmon'] <= config["maxErrorBeforeYellow"] and monitoring == 'active':
-        monitoringindicator = '🟢'
-    elif indexer != 'dead':
-        monitoringindicator = '🟡'
-    else:
-        monitoringindicator = '🔴'
-
-    if announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] <= config["maxErrorBeforeYellow"] and \
-            statuslist['commander'] <= config["maxErrorBeforeYellow"] and statuslist['indexer'] <= config["maxErrorBeforeYellow"]:
-        message = (
-            f"Verfügbarkeit der Dienste:\n\n"
-            f"{announcerindicator} - Announcer\n"
-            f"{commanderindicator} - Commander\n"
-            f"{indexerindicator} - Indexer\n"
-            f"{monitoringindicator} - Monitoring\n\n"
-            f"Alle Dienste laufen Störungsfrei!"
-        )
-        context.bot.send_message(chat_id=chat_id, text=message)
-    elif announcer == 'active' and commander == 'active' and indexer == 'active' and statuslist['announcer'] >= config["maxErrorBeforeYellow"] or \
-            statuslist['commander'] >= config["maxErrorBeforeYellow"] or statuslist['indexer'] >= config["maxErrorBeforeYellow"]:
-        message = (
-            f"Verfügbarkeit der Dienste:\n\n"
-            f"{announcerindicator} - Announcer\n"
-            f"{commanderindicator} - Commander\n"
-            f"{indexerindicator} - Indexer\n"
-            f"{monitoringindicator} - Monitoring\n\n"
-            f"Aktuell können vereinzelte Störungen auftreten"
-        )
-        context.bot.send_message(chat_id=chat_id, text=message)
-    elif announcer == 'dead' or commander == 'dead' or indexer == 'dead':
-        message = (
-            f"Verfügbarkeit der Dienste:\n\n"
-            f"{announcerindicator} - Announcer\n"
-            f"{commanderindicator} - Commander\n"
-            f"{indexerindicator} - Indexer\n"
-            f"{monitoringindicator} - Monitoring\n\n"
-            f"Ein oder mehrere Dienste sind ausgefallen!"
-        )
-        context.bot.send_message(chat_id=chat_id, text=message)
-
-
-def konami_code(update, context):
-    id = update.effective_chat.id
-    text = update.message.text.lower()
-    if "hoch hoch runter runter links rechts links rechts b a" in text:
-        context.bot.send_message(chat_id=id, text="Konami-Code erkannt!🕹️ WAO+ Abonnement freigeschaltet!")
+def call_status(update, context):
+    status(update, context)
 
 
 def get_stations_keyboard(update, context):
     chat_id = update.effective_chat.id
     stations_file = f"/root/WAO-Abobot/data/{chat_id}/stations.json"
-    sender_file = "sender.json"
+    sender_file = "/root/WAO-Abobot/sender.json"
 
     with open(stations_file, "r") as file:
         stations_data = json.load(file)
@@ -411,32 +270,32 @@ def start(update, context):
     chat_id = update.message.chat_id
     user = context.bot.get_chat_member(chat_id, user_id)
     if user.status in ["administrator", "creator"]:
-        logger.info(f"Welcoming {id}")
+        print(f"Welcoming {id}")
         os.mkdir(f"/root/WAO-Abobot/data/{id}")
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}")
+        print(f"Creating /root/WAO-Abobot/data/{id}")
         subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
         f = open(subfile, 'w+')
         f.write('{"subscriptions": []}')
         f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
+        print(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
         cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
         f = open(cachefile, 'w+')
         f.write('{"sent": []}')
         f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
+        print(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
         configfile = f"/root/WAO-Abobot/data/{id}/config.json"
         f = open(configfile, 'w+')
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+        print(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
         stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
         with open("stations.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
         f.write(json_string)
         f.close()
-        logger.info(f"Creating /root/WAO-Abobot/data/{id}/stations.json")
-        logger.info("READY!")
+        print(f"Creating /root/WAO-Abobot/data/{id}/stations.json")
+        print("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                       "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
@@ -446,7 +305,7 @@ def start(update, context):
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
     username = str(update.message.from_user.username)
-    logger.info(f"{username}@{id} ran unsubscribe")
+    print(f"{username}@{id} ran unsubscribe")
 
     # Lade die Liste der abonnierten DJs
     with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
@@ -498,13 +357,13 @@ def button_unsubscribe(update, context):
 
     # Sende eine Best�tigungsnachricht an den Benutzer
     query.answer(text=f"{dj} wurde erfolgreich deabonniert.")
-    logger.info(f"{query.message.from_user.username} hat {dj} deabonniert!")
+    print(f"{query.message.from_user.username} hat {dj} deabonniert!")
 
 
 def subscribe(update, context):
     id = str(update.effective_chat.id)
     username = str(update.message.from_user.username)
-    logger.info(f"{username}@{id} ran subscribe")
+    print(f"{username}@{id} ran subscribe")
 
     # Lade die Liste der abonnierten DJs
     with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
@@ -517,7 +376,7 @@ def subscribe(update, context):
     subscribed_djs = subs["subscriptions"]
 
     # Lade die Liste aller DJs aus der djs.json-Datei und filtere die bereits abonnierten aus
-    with open("djs.json") as f:
+    with open("/root/WAO-Abobot/djs.json") as f:
         all_djs = json.load(f)
     available_djs = [dj for dj in all_djs if dj not in subscribed_djs]
 
@@ -567,7 +426,7 @@ def button_subscribe(update, context):
 
         # Sende eine Bestätigungsnachricht an den Benutzer
         query.answer(text=f"{dj} wurde erfolgreich abonniert.")
-        logger.info(f"{dj} in {id} abonniert!")
+        print(f"{dj} in {id} abonniert!")
     else:
         # Wenn der DJ bereits abonniert ist, sende eine Fehlermeldung an den Benutzer
         query.answer(text=f"{dj} ist bereits abonniert.")
@@ -589,10 +448,10 @@ def ban(update, context):
                 context.bot.send_message(chat_id=update.effective_chat.id, text=f"{dj} ist bereits auf der Blacklist!")
             elif dj in config["immune"]:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=f"Ein Fehler ist beim Bannen von {dj} aufgetreten!")
-                logger.warning(f"{update.message.from_user.username} hat versucht {dj} zu bannen - DJ ist immunisiert")
+                print(f"{update.message.from_user.username} hat versucht {dj} zu bannen - DJ ist immunisiert")
             else:
                 blacklist.append(dj)
-                logger.warning(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
+                print(f"{update.message.from_user.username} hat {dj} in die Blacklist aufgenommen!")
                 with open(f"/root/WAO-Abobot/blacklist.json", "w") as blacklistf:
                     data = {
                         "blacklist": blacklist
@@ -641,7 +500,7 @@ def checksubs(update, context):
                     context.bot.send_message(chat_id=update.effective_chat.id,
                                              text=f"Die Show {show} von {dj} auf {station} startet am {startTime}!")
         else:
-            logger.error(f"[{station}] FEHLER {status} von {endpoint_url}")
+            error(f"[{station}] FEHLER {status} von {endpoint_url}")
     if showCount == 0:
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text="In den nächsten 15 Minuten beginnen keine Shows auf deinen abonnierten Kanälen!")
@@ -698,7 +557,7 @@ def list_bans(update, context):
 def unban(update, context):
     id = str(update.effective_chat.id)
     username = str(update.message.from_user.username)
-    logger.info(f"{username}@{id} ran unban")
+    print(f"{username}@{id} ran unban")
     if id != config['adminID']:
         context.bot.send_message(chat_id=update.effective_chat.id, text="KEINE BERECHTIGUNG!")
     else:
@@ -753,28 +612,25 @@ def button_unban(update, context):
 
        # Sende eine Bestätigungsnachricht an den Benutzer
        query.answer(text=f"{dj} wurde erfolgreich entbannt.")
-       logger.info(f"{dj} durch {id} entbannt")
+       print(f"{dj} durch {id} entbannt")
 
     else:
-       logger.error(f'{dj} kann nicht entbannt werden! - Permabann!')
+       error(f'{dj} kann nicht entbannt werden! - Permabann!')
        query.answer(text=f"Sorry... Aber das kann ich nicht zulassen!")
-
-
-def error(update, context):
-    with open("status.json") as statusfile:
-        json_string = statusfile.read()
-    statuslist = json.loads(json_string)
-
-    """Log Errors caused by Updates."""
-    logger.error('Update "%s" caused error "%s"', update, context.error)
-    message = f'⚠️⚠️⚠️ STÖRUNG! - COMMANDER Update "{update}", Fehler "{context.error} - Nähere Infos in der logs.log"'
-    content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={config['adminID']}&parse_mode=Markdown&text={message}"
-    requests.get(content)
-    statuslist['commander'] += 1
 
     # Schreibe die aktualisierte statuslist zurück in die Datei
     with open("status.json", "w") as statusfile:
         json.dump(statuslist, statusfile)
 
 
-init()
+
+try:
+    try:
+        init()
+        main()
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        error_msg = f"Unbekannter Fehler im Hauptprozess. Fehler: {str(e)}\n{traceback_str}"
+        error(component, {"error": error_msg})
+except KeyboardInterrupt:
+    print("Program terminated by user.")

@@ -1,9 +1,8 @@
 import os
 import sys
-
+        
 commander = "wao-commander"
-announcer = "wao-announcer"
-indexer = "wao-indexer"
+announcer = "wao-announcer"     
 
 def restart(arg=None):
     try:
@@ -13,8 +12,6 @@ def restart(arg=None):
                     service = commander
                 elif arg == "announcer":
                     service = announcer
-                elif arg == "index" or arg == "indexer":
-                    service = indexer
                 else:
                     handle_exception(f"Awww man... {arg} is not a service i know! Try commander, announcer, index or indexer")
                 
@@ -25,7 +22,6 @@ def restart(arg=None):
             print(f"Restarting all Services... Please wait!")
             os.system("systemctl restart wao-announcer.service")
             os.system("systemctl restart wao-commander.service")
-            os.system("systemctl restart wao-index.service")
 
             print("RESTART SUCCESSFUL!")
     except Exception as e:
@@ -39,8 +35,6 @@ def start(arg=None):
                     service = commander
                 elif arg == "announcer":
                     service = announcer
-                elif arg == "index" or arg == "indexer":
-                    service = indexer
                 else:
                     print(f"Awww man... {arg} is not a service i know! Try commander, announcer, index or indexer")
                     sys.exit()
@@ -52,7 +46,6 @@ def start(arg=None):
             print(f"Starting all Services... Please wait!")
             os.system("systemctl start wao-announcer.service")
             os.system("systemctl start wao-commander.service")
-            os.system("systemctl start wao-index.service")
 
             print("START SUCCESSFUL!")
     except Exception as e:
@@ -66,8 +59,6 @@ def stop(arg=None):
                     service = commander
                 elif arg == "announcer":
                     service = announcer
-                elif arg == "index" or arg == "indexer":
-                    service = indexer
                 else:
                     print(f"Awww man... {arg} is not a service i know! Try commander, announcer, index or indexer")
                     sys.exit()
@@ -79,7 +70,6 @@ def stop(arg=None):
             print(f"Stopping all Services... Please wait!")
             os.system("systemctl stop wao-announcer.service")
             os.system("systemctl stop wao-commander.service")
-            os.system("systemctl stop wao-index.service")
 
             print("STOP SUCCESSFUL!")
     except Exception as e:
