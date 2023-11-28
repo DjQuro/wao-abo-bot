@@ -1,4 +1,8 @@
 [![Python application](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml)
+[![Bandit](https://github.com/DjQuro/wao-abo-bot/actions/workflows/bandit.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/bandit.yml)
+[![CodeQL](https://github.com/DjQuro/wao-abo-bot/actions/workflows/codeql.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/codeql.yml)
+[![dependency-review](https://github.com/DjQuro/wao-abo-bot/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/dependency-review.yml)
+
 # We.aRe.oNe Abo Bot
 Telegrambot zum abonnieren von DJs der We.aRe.oNe Sendegruppe
 
