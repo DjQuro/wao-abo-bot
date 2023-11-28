@@ -618,12 +618,6 @@ def button_unban(update, context):
        error(f'{dj} kann nicht entbannt werden! - Permabann!')
        query.answer(text=f"Sorry... Aber das kann ich nicht zulassen!")
 
-    # Schreibe die aktualisierte statuslist zurück in die Datei
-    with open("status.json", "w") as statusfile:
-        json.dump(statuslist, statusfile)
-
-
-
 try:
     try:
         init()

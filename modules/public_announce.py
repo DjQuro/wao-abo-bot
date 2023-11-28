@@ -13,10 +13,10 @@ with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
 config = json.loads(json_string)
 
-def announce(text):
+def announce(arg):
     try:
         if arg:
-            message = " ".join(text.args)
+            message = " ".join(arg.args)
             rootdir = '/root/WAO-Abobot/data'
             for rootdir, dirs, files in os.walk(rootdir):
                 for subdir in dirs:
