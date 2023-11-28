@@ -24,7 +24,7 @@ def install(arg=None):
             cron_command = "0 0 * * * /usr/bin/python3 /root/WAO-Abobot/bcl.py logclear"
             index_command = "0 * * * * /usr/bin/python3 /root/WAO-Abobot/bcl.py updatedb"
             subprocess.run(["bash", "-c", f"(crontab -l 2>/dev/null; echo '{cron_command}') | crontab -"])
-            subprecess.run(["bash", "-c", f"(crontab -l 2>/dev/null; echo '{index_command}') | crontab -"])
+            subprocess.run(["bash", "-c", f"(crontab -l 2>/dev/null; echo '{index_command}') | crontab -"])
 
             # Python 3 und pip installieren (falls nicht bereits installiert)
             subprocess.run(["sudo", "apt-get", "update"])

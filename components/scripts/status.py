@@ -49,7 +49,7 @@ def status(update, context):
 
     if statuslist['botmon'] <= config["maxErrorBeforeYellow"] and monitoring == 'active':
         monitoringindicator = '🟢'
-    elif indexer != 'dead':
+    elif monitoring != 'dead':
         monitoringindicator = '🟡'
     else:
         monitoringindicator = '🔴'
