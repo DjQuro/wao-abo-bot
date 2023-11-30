@@ -615,7 +615,6 @@ def button_unban(update, context):
        print(f"{dj} durch {id} entbannt")
 
     else:
-       error(f'{dj} kann nicht entbannt werden! - Permabann!')
        query.answer(text=f"Sorry... Aber das kann ich nicht zulassen!")
 
 try:
@@ -625,6 +624,5 @@ try:
     except Exception as e:
         traceback_str = traceback.format_exc()
         error_msg = f"Unbekannter Fehler im Hauptprozess. Fehler: {str(e)}\n{traceback_str}"
-        error(component, {"error": error_msg})
 except KeyboardInterrupt:
     print("Program terminated by user.")

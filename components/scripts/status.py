@@ -61,7 +61,8 @@ def status(update, context):
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
-            f"Alle Dienste laufen Störungsfrei!"
+            f"Alle Dienste laufen Störungsfrei!\n\n"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
     elif announcer == 'active' and commander == 'active' and statuslist['announcer'] >= config["maxErrorBeforeYellow"] or \
@@ -71,7 +72,8 @@ def status(update, context):
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
-            f"Aktuell können vereinzelte Störungen auftreten"
+            f"Aktuell können vereinzelte Störungen auftreten\n\n"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
     elif announcer == 'dead' or commander == 'dead':
@@ -80,6 +82,7 @@ def status(update, context):
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
-            f"Ein oder mehrere Dienste sind ausgefallen!"
+            f"Ein oder mehrere Dienste sind ausgefallen!\n\n"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)

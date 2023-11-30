@@ -27,6 +27,7 @@ def checkUpdate(component):
         else:
           return False
     else:
+        print('\033[F', end='', flush=True)
         print(f"Update-Check failed! ERROR: {status}")
         
 def update(arg=None):
@@ -54,20 +55,25 @@ def getUpdate(arg=None):
     update_available_announcer = checkUpdate('announcer')
     update_available_bcl = checkUpdate('bcl')
     if update_available_commander or update_available_announcer or update_available_bcl:
+        print('\033[F', end='', flush=True)
         backup()
+        print('\033[F', end='', flush=True)
         stop()
         try:
              repo = git.Repo('/root/WAO-Abobot')
              origin = repo.remote(name='origin')
              origin.pull()
+             print('\033[F', end='', flush=True)
              print(f"Erfolgreich von {repo.remotes.origin.url} aktualisiert.")
              return repo
              start()
              
         except git.exc.GitCommandError as e:
              
+             print('\033[F', end='', flush=True)
              print(f"Fehler beim Aktualisieren des Repositoriums: {e}")
              return None
              start()
     else:
+        print('\033[F', end='', flush=True)
         print("No update required!")

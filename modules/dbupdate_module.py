@@ -32,7 +32,7 @@ def updatedb(arg=None):  # Updated function definition
             dj_name = ""
             last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             base_url = "https://api.weareone.fm/v1/showplan/{station}/{day}"
-            with open("blacklist.json") as blacklistfile:
+            with open("/root/WAO-Abobot/blacklist.json") as blacklistfile:
                  json_string = blacklistfile.read()
             blacklist = json.loads(json_string)
 
@@ -49,7 +49,7 @@ def updatedb(arg=None):  # Updated function definition
                     response = requests.get(endpoint_url)
                     status = str(response.status_code)
                     print('\033[F', end='', flush=True)
-                    print(f"GET {endpoint_url}")
+                    print(f"GET {endpoint_url}                        ")
 
                     if response.ok:
                         data = response.json()
@@ -63,6 +63,8 @@ def updatedb(arg=None):  # Updated function definition
                                 last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                                 djs[dj_name] = {"last_seen": last_seen}
                                 new += 1
+                                print('\033[F', end='', flush=True)
+                                print(f"New DJ {dj_name}                  ")
                             else:
                                 if dj_name in djs:
                                     # Prüfe, ob DJ seit maxInactivityDays Tagen nicht mehr erkannt wurde
@@ -70,18 +72,24 @@ def updatedb(arg=None):  # Updated function definition
                                         del djs[dj_name]
                                         deleted += 1
                                         dj_count -= 1
+                                        print('\033[F', end='', flush=True)
+                                        print(f"Deleted {dj_name} because inactive                          ")
                                     # Prüfe, ob DJ gebannt wurde
                                     elif dj_name in blacklist['blacklist']:
                                         del djs[dj_name]
                                         deleted += 1
                                         dj_count -= 1
+                                        print('\033[F', end='', flush=True)
+                                        print(f"Deleted {dj_name} because banned                            ")
                                     else:
                                         djs[dj_name]["last_seen"] = last_seen
                                         dj_count += 1
+                                        print('\033[F', end='', flush=True)
+                                        print(f"No Action for {dj_name}                                     ")
 
 
                     else:
-                        print(f"ERROR {status} from  {endpoint_url}")
+                        print(f"ERROR {status} from  {endpoint_url}                                          ")
 
                 # Speichere die aktualisierte djs.json
                 with open(djs_file, "w") as f:
@@ -89,6 +97,19 @@ def updatedb(arg=None):  # Updated function definition
                 day += 1
             print('\033[F', end='', flush=True)
             print(f"Database update successful! New Entrys:{new} Purged Entrys:{deleted} Registered DJs:{new + dj_count}")
+            # Öffne die Datei zum Lesen und Laden des JSON-Inhalts
+            with open("/root/WAO-Abobot/status.json", "r") as f:
+                status = json.load(f)
+            
+            # Aktuellen Zeitstempel erstellen
+            current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Aktualisiere den Wert für den "db_check"-Schlüssel
+            status["db_check"] = current_timestamp
+            
+            # Öffne die Datei erneut zum Schreiben und Speichern des aktualisierten JSON
+            with open("/root/WAO-Abobot/status.json", "w") as f:
+                json.dump(status, f)
 
     except Exception as e:
         handle_exception(f"Error in updateDB: {e}")
