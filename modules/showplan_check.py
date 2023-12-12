@@ -23,6 +23,7 @@ config = json.loads(json_string)
 
 def check(base_url):
     rootdir = '/root/WAO-Abobot/data'
+    print(f"Processing...")
     for subdir in os.scandir(rootdir):
         if subdir.is_dir():
             chatid = subdir.name
@@ -58,7 +59,12 @@ def check(base_url):
                                     startUnix = x["s"] // 1000
                                     startOffset = startUnix - time.time()
                                     if minTime >= startOffset and uid not in sent:
+                                        print('\033[F', end='', flush=True)
+                                        print(f"Processing {x['m']} on {station} for {chatid}                 ")
                                         process_show(x, subs, minTime, sent, chatid, cache_file, station)
+                                else:
+                                    print('\033[F', end='', flush=True)
+                                    print(f"Skipping {x['m']} on {station} for {chatid}                       ")
                         else:
                             print(f"[{station}] FEHLER {status} von {endpoint_url}")
                     except requests.exceptions.Timeout:

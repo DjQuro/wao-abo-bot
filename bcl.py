@@ -10,6 +10,7 @@ from pathlib import Path
 import requests
 import glob
 import subprocess
+import traceback
 from modules.help_module import help
 from modules.service_control_module import start, stop, restart
 from modules.blacklist_handler import ban
@@ -87,6 +88,8 @@ def send_update():
         status["notify_check"] = current_timestamp
         with open("/root/WAO-Abobot/status.json", "w") as f:
             json.dump(status, f)
+        print('\033[F', end='', flush=True)
+        print(f"Notification command successfully performed at {current_timestamp}")
     except Exception as e:
         traceback_str = traceback.format_exc()
         error_msg = f"Unbekannter Fehler im Hauptprozess. Fehler: {str(e)}\n{traceback_str}"
