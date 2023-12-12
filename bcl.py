@@ -114,9 +114,9 @@ if __name__ == '__main__':
     else:
         # Wenn keine Argumente übergeben wurden, starte direkt in der Kommandozeile
         while True:
-            user_input = input("Enter a command (or 'exit' to quit): ")
+            user_input = input("Enter a command (or 'exit' 'quit' or 'q' to quit): ")
 
-            if user_input.lower() == 'exit':
+            if user_input.lower() == 'exit' or 'quit' or 'q':
                 break
             elif user_input:
                 if ' ' in user_input:
