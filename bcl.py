@@ -19,6 +19,10 @@ from modules.maintenance_module import reset, logclear
 from modules.public_announce import announce
 from modules.update_module import checkUpdate, update, getUpdate
 from modules.backup_module import backup
+from modules.showprocessor import process_show
+from modules.error import error
+from modules.update_check import checkUpdate
+from modules.showplan_check import check as check_showplan
 
 with open("/root/WAO-Abobot/data/banner.txt", "r") as banner_file:
     banner_content = banner_file.read()
@@ -43,7 +47,50 @@ def handle_exception(error_message):
 
 
 def process_command(command, argument):
-    globals()[command](argument)
+    if command == 'notify':
+        send_update()
+    else:
+        globals()[command](argument)
+    
+def newday():
+    aktuelle_zeit_unix = time.time()
+    aktuelle_zeit = time.localtime(aktuelle_zeit_unix).tm_hour
+    start_zeit = 23  # 23:00 Uhr
+    end_zeit = 0  # 00:00 Uhr
+
+    if start_zeit <= aktuelle_zeit <= 24 or aktuelle_zeit == start_zeit:
+        return True
+    else:
+        return False
+
+def send_update():
+    with open("/root/WAO-Abobot/config.json") as f:
+        json_string = f.read()
+    config = json.loads(json_string)
+
+    # Create the base URL string
+    with open("/root/WAO-Abobot/stations.json") as f:
+        stationlist = json.load(f)
+
+    base_url = "https://api.weareone.fm/v1/showplan/{station}/1"
+    base_url_morgen = "https://api.weareone.fm/v1/showplan/{station}/2"
+    stations = stationlist["stations"]
+    stationCount = len(stations)
+    try:
+        check_showplan(base_url)
+        if newday():
+            check_showplan(base_url_morgen)
+
+        with open("/root/WAO-Abobot/status.json", "r") as f:
+            status = json.load(f)
+        current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        status["notify_check"] = current_timestamp
+        with open("/root/WAO-Abobot/status.json", "w") as f:
+            json.dump(status, f)
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        error_msg = f"Unbekannter Fehler im Hauptprozess. Fehler: {str(e)}\n{traceback_str}"
+        error(component, {"error": error_msg})
     
 if __name__ == '__main__':
     # Überprüfe, ob Argumente übergeben wurden

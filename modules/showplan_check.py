@@ -7,8 +7,8 @@ import urllib
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from scripts.error import error
-from scripts.showprocessor import process_show
+from modules.error import error
+from modules.showprocessor import process_show
 import requests
 
 component = 'announcer'

@@ -24,8 +24,6 @@ def restart(arg=None):
             if arg:
                 if arg == "commander":
                     service = commander
-                elif arg == "announcer":
-                    service = announcer
                 else:
                     handle_exception(f"Awww man... {arg} is not a service I know! Try commander, announcer, index, or indexer")
 
@@ -39,7 +37,6 @@ def restart(arg=None):
             print("Restarting all Services... Please wait!")
             loading_thread = threading.Thread(target=loading_animation)
             loading_thread.start()
-            os.system("systemctl restart wao-announcer.service")
             os.system("systemctl restart wao-commander.service")
             stop_event.set()
             print("RESTART SUCCESSFUL!")
@@ -53,8 +50,6 @@ def start(arg=None):
             if arg:
                 if arg == "commander":
                     service = commander
-                elif arg == "announcer":
-                    service = announcer
                 else:
                     print(f"Awww man... {arg} is not a service I know! Try commander, announcer, index, or indexer")
                     sys.exit()
@@ -69,7 +64,6 @@ def start(arg=None):
             print("Starting all Services... Please wait!")
             loading_thread = threading.Thread(target=loading_animation)
             loading_thread.start()
-            os.system("systemctl start wao-announcer.service")
             os.system("systemctl start wao-commander.service")
             stop_event.set()
             print("START SUCCESSFUL!")
@@ -83,8 +77,6 @@ def stop(arg=None):
             if arg:
                 if arg == "commander":
                     service = commander
-                elif arg == "announcer":
-                    service = announcer
                 else:
                     print(f"Awww man... {arg} is not a service I know! Try commander, announcer, index, or indexer")
                     sys.exit()
@@ -99,7 +91,6 @@ def stop(arg=None):
             print("Stopping all Services... Please wait!")
             loading_thread = threading.Thread(target=loading_animation)
             loading_thread.start()
-            os.system("systemctl stop wao-announcer.service")
             os.system("systemctl stop wao-commander.service")
             stop_event.set()
             print("STOP SUCCESSFUL!")

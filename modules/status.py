@@ -26,16 +26,19 @@ def check_service_status(service_name):
 
 def status(update, context):
     chat_id = update.effective_chat.id
+    announcer = check_service_status("wao-announcer")
     commander = check_service_status("wao-commander")
     monitoring = check_service_status("botmon")
 
     with open("/root/WAO-Abobot/status.json") as statusfile:
         json_string = statusfile.read()
     statuslist = json.loads(json_string)
-    if statuslist['announcer'] <= config["maxErrorBeforeYellow"]:
+    if statuslist['announcer'] <= config["maxErrorBeforeYellow"] and announcer == 'active':
         announcerindicator = '🟢'
-    else:
+    elif announcer != 'dead':
         announcerindicator = '🟡'
+    else:
+        announcerindicator = '🔴'
 
     if statuslist['commander'] <= config["maxErrorBeforeYellow"] and commander == 'active':
         commanderindicator = '🟢'
@@ -51,7 +54,7 @@ def status(update, context):
     else:
         monitoringindicator = '🔴'
 
-    if monitoring == 'active' and commander == 'active' and statuslist['announcer'] <= config["maxErrorBeforeYellow"] and \
+    if announcer == 'active' and commander == 'active' and statuslist['announcer'] <= config["maxErrorBeforeYellow"] and \
             statuslist['commander'] <= config["maxErrorBeforeYellow"]:
         message = (
             f"Verfügbarkeit der Dienste:\n\n"
@@ -59,11 +62,10 @@ def status(update, context):
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
             f"Alle Dienste laufen Störungsfrei!\n\n"
-            f"Letztes Datenbank-Update: {statuslist['db_check']}\n\n"
-            f"Letztes Showplan-Update: {statuslist['notify_check']}"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
-    elif monitoring == 'active' and commander == 'active' and statuslist['announcer'] >= config["maxErrorBeforeYellow"] or \
+    elif announcer == 'active' and commander == 'active' and statuslist['announcer'] >= config["maxErrorBeforeYellow"] or \
             statuslist['commander'] >= config["maxErrorBeforeYellow"]:
         message = (
             f"Verfügbarkeit der Dienste:\n\n"
@@ -71,18 +73,16 @@ def status(update, context):
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
             f"Aktuell können vereinzelte Störungen auftreten\n\n"
-            f"Letztes Datenbank-Update: {statuslist['db_check']}\n\n"
-            f"Letztes Showplan-Update: {statuslist['notify_check']}"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
-    elif monitoring == 'dead' or commander == 'dead':
+    elif announcer == 'dead' or commander == 'dead':
         message = (
             f"Verfügbarkeit der Dienste:\n\n"
             f"{announcerindicator} - Announcer\n"
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
             f"Ein oder mehrere Dienste sind ausgefallen!\n\n"
-            f"Letztes Datenbank-Update: {statuslist['db_check']}\n\n"
-            f"Letztes Showplan-Update: {statuslist['notify_check']}"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)

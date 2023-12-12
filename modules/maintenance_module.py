@@ -4,6 +4,7 @@ import sys
 import time
 import glob
 from datetime import datetime, timedelta
+from modules.dbupdate_module import updatedb
 
 def logclear(arg=None):
     try:
@@ -20,9 +21,7 @@ def logclear(arg=None):
 
             # Dienste stoppen
             os.system("systemctl stop botmon.service")
-            os.system("systemctl stop wao-announcer.service")
             os.system("systemctl stop wao-commander.service")
-            os.system("systemctl stop wao-index.service")
             
             # Verschiebe die logs.log-Datei ins neue Verzeichnis
             new_log_path = os.path.join(dest_dir, datetime.now().strftime("%Y-%m-%d") + ".log")
@@ -42,8 +41,9 @@ def logclear(arg=None):
             {
               "announcer": 0,
               "commander": 0,
-              "indexer": 0,
-              "botmon": 0
+              "botmon": 0,
+              "db_check":"1970-01-01 00:00:00",
+              "notify_check":"1970-01-01 00:00:00"
             }
             '''
             with open(os.path.join(log_dir, "status.json"), "w") as status_file:
@@ -58,10 +58,9 @@ def logclear(arg=None):
                     os.remove(old_log_file)
 
             # Starte Dienste neu
-            os.system("systemctl start wao-announcer.service")
             os.system("systemctl start wao-commander.service")
-            os.system("systemctl start wao-index.service")
             os.system("systemctl start botmon.service")
+            updatedb()
 
             print("LOGCLEAR SUCCESSFUL!")
                     
@@ -83,9 +82,7 @@ def reset(arg=None):
 
             # Dienste stoppen
             os.system("systemctl stop botmon.service")
-            os.system("systemctl stop wao-announcer.service")
             os.system("systemctl stop wao-commander.service")
-            os.system("systemctl stop wao-index.service")
 
             # Lösche den Statusfile
             os.remove(os.path.join(log_dir, "status.json"))
@@ -98,18 +95,18 @@ def reset(arg=None):
             {
               "announcer": 0,
               "commander": 0,
-              "indexer": 0,
-              "botmon": 0
+              "botmon": 0,
+              "db_check":"1970-01-01 00:00:00",
+              "notify_check":"1970-01-01 00:00:00"
             }
             '''
             with open(os.path.join(log_dir, "status.json"), "w") as status_file:
                 status_file.write(status_data)
 
             # Starte Dienste neu
-            os.system("systemctl start wao-announcer.service")
             os.system("systemctl start wao-commander.service")
-            os.system("systemctl start wao-index.service")
             os.system("systemctl start botmon.service")
+            updatedb()
 
             print("RESET SUCCESSFUL!")
     except Exception as e:
@@ -117,3 +114,4 @@ def reset(arg=None):
         
 def handle_exception(error_message):
     print(error_message)
+
