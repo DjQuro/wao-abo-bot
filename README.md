@@ -34,10 +34,12 @@ In der Config unter bot_token den Bot Token angeben. Zudem wird für die Verwend
 
 # Wo funktioniert der Bot?
 Der Bot funktioniert im Privatchat sowie in Gruppen und Supergruppen (Achtung! In Gruppen können /time und /start NUR von Gruppenadmins ausgeführt werden)
-Als Ankündigungsbot in einem Channel ist dieser Bot leider nicht nutzbar! Hierfür kann mein Announcer-Bot aus meinem anderen Repository gezogen werden (folgt)
+Als Ankündigungsbot in einem Channel ist dieser Bot leider noch nicht nutzbar! Update folgt!
 
 # To Do
 - Performance anpassen (Der Abstand zwischen den gesendeten Nachrichten ist teilweise sehr hoch)
+- Channelbots
+- Mehr Benachrichtigungsereignisse
 - Wir brauchen mehr Gummibären!
 - Supportfunktion für Betreiber
 
