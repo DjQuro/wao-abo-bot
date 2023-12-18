@@ -7,7 +7,7 @@ import traceback
 from modules.error import error
 from modules.update_module import checkUpdate, update, getUpdate
 from modules.showplan_check import check as check_showplan
-#OPTIONAL IMPORTS HERE
+# OPTIONAL IMPORTS HERE
 
 from modules.help_module import help
 from modules.service_control_module import start, stop, restart
@@ -37,6 +37,7 @@ if update_available:
 else:
     print(f"                                                 Bot Command Line Version: {versions['bcl']}\n")
 
+
 def handle_exception(error_message):
     print(error_message)
 
@@ -47,16 +48,18 @@ def process_command(command, argument):
     else:
         globals()[command](argument)
     
+
 def newday():
     aktuelle_zeit_unix = time.time()
     aktuelle_zeit = time.localtime(aktuelle_zeit_unix).tm_hour
     start_zeit = 23  # 23:00 Uhr
     end_zeit = 0  # 00:00 Uhr
 
-    if start_zeit <= aktuelle_zeit <= 24 or aktuelle_zeit == start_zeit:
+    if start_zeit <= aktuelle_zeit <= end_zeit or aktuelle_zeit == start_zeit:
         return True
     else:
         return False
+
 
 def send_update():
     with open("/root/WAO-Abobot/config.json") as f:
@@ -70,25 +73,28 @@ def send_update():
     base_url = "https://api.weareone.fm/v1/showplan/{station}/1"
     base_url_morgen = "https://api.weareone.fm/v1/showplan/{station}/2"
     stations = stationlist["stations"]
-    stationCount = len(stations)
     try:
         check_showplan(base_url)
         if newday():
             check_showplan(base_url_morgen)
 
-        with open("/root/WAO-Abobot/status.json", "r") as f:
-            status = json.load(f)
-        current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        status["notify_check"] = current_timestamp
-        with open("/root/WAO-Abobot/status.json", "w") as f:
-            json.dump(status, f)
-        print('\033[F', end='', flush=True)
-        print(f"Notification command successfully performed at {current_timestamp}")
+            # Aktualisiere den Timestamp in der Statusdatei
+            with open("/root/WAO-Abobot/status.json", "r+") as f:
+                status = json.load(f)
+                current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                status["notify_check"] = current_timestamp
+                f.seek(0)
+                json.dump(status, f, indent=2)
+                f.truncate()
+
+            print('\033[F', end='', flush=True)
+            print(f"Notification command successfully performed at {current_timestamp}")
     except Exception as e:
         traceback_str = traceback.format_exc()
         error_msg = f"Unbekannter Fehler im Hauptprozess. Fehler: {str(e)}\n{traceback_str}"
         error(component, {"error": error_msg})
     
+
 if __name__ == '__main__':
     # Überprüfe, ob Argumente übergeben wurden
     if len(sys.argv) > 1:
