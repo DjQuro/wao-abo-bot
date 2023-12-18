@@ -36,7 +36,7 @@ component = "bcl"
 
 print(banner_content)
 
-update_available = checkUpdate(component)
+update_available = checkUpdate("bcl")
 
 if update_available:
     print(f"                                                 Bot Command Line Version: {versions['bcl']}\n                                                 New Update available!")
