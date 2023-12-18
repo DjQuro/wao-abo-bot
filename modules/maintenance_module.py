@@ -1,7 +1,4 @@
-import json
 import os
-import sys
-import time
 import glob
 from datetime import datetime, timedelta
 from modules.dbupdate_module import updatedb

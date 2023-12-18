@@ -270,32 +270,25 @@ def start(update, context):
     chat_id = update.message.chat_id
     user = context.bot.get_chat_member(chat_id, user_id)
     if user.status in ["administrator", "creator"]:
-        print(f"Welcoming {id}")
         os.mkdir(f"/root/WAO-Abobot/data/{id}")
-        print(f"Creating /root/WAO-Abobot/data/{id}")
         subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
         f = open(subfile, 'w+')
         f.write('{"subscriptions": []}')
         f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
         cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
         f = open(cachefile, 'w+')
         f.write('{"sent": []}')
         f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
         configfile = f"/root/WAO-Abobot/data/{id}/config.json"
         f = open(configfile, 'w+')
         f.write('{"minInfo": ' + config["defaultTime"] + '}')
         f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
         stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
         with open("stations.json") as preset:
             json_string = preset.read()
         f = open(stationsfile, 'w+')
         f.write(json_string)
         f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/stations.json")
-        print("READY!")
         context.bot.send_message(chat_id=id,
                                  text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
                                       "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
@@ -305,7 +298,6 @@ def start(update, context):
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
     username = str(update.message.from_user.username)
-    print(f"{username}@{id} ran unsubscribe")
 
     # Lade die Liste der abonnierten DJs
     with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
@@ -357,13 +349,11 @@ def button_unsubscribe(update, context):
 
     # Sende eine Best�tigungsnachricht an den Benutzer
     query.answer(text=f"{dj} wurde erfolgreich deabonniert.")
-    print(f"{query.message.from_user.username} hat {dj} deabonniert!")
 
 
 def subscribe(update, context):
     id = str(update.effective_chat.id)
     username = str(update.message.from_user.username)
-    print(f"{username}@{id} ran subscribe")
 
     # Lade die Liste der abonnierten DJs
     with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:

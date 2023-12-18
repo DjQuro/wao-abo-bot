@@ -2,8 +2,6 @@ import urllib
 import urllib.parse
 import requests
 import json
-import logging
-import sys
 from modules.error import error
 
 def checkUpdate(component):

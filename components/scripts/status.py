@@ -1,14 +1,5 @@
 import json
 import subprocess
-import logging
-import os
-import sys
-import time
-import urllib
-import urllib.parse
-import requests
-import traceback
-from scripts.error import error
 
 with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
@@ -59,7 +50,7 @@ def status(update, context):
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
             f"Alle Dienste laufen Störungsfrei!\n\n"
-            f"Letztes Datenbank-Update: {statuslist['db_check']}\n\n"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}\n"
             f"Letztes Showplan-Update: {statuslist['notify_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
@@ -71,7 +62,7 @@ def status(update, context):
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
             f"Aktuell können vereinzelte Störungen auftreten\n\n"
-            f"Letztes Datenbank-Update: {statuslist['db_check']}\n\n"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}\n"
             f"Letztes Showplan-Update: {statuslist['notify_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)
@@ -82,7 +73,7 @@ def status(update, context):
             f"{commanderindicator} - Commander\n"
             f"{monitoringindicator} - Monitoring\n\n"
             f"Ein oder mehrere Dienste sind ausgefallen!\n\n"
-            f"Letztes Datenbank-Update: {statuslist['db_check']}\n\n"
+            f"Letztes Datenbank-Update: {statuslist['db_check']}\n"
             f"Letztes Showplan-Update: {statuslist['notify_check']}"
         )
         context.bot.send_message(chat_id=chat_id, text=message)

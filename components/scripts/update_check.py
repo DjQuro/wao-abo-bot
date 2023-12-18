@@ -2,9 +2,7 @@ import urllib
 import urllib.parse
 import requests
 import json
-import logging
-import sys
-from scripts.error import error
+from error import error
 
 def checkUpdate(component):
     with open("/root/WAO-Abobot/versions.json") as versionfile:
