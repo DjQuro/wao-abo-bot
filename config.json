@@ -8,14 +8,10 @@
       "active":false,
       "sheduledMaintenance":false,
       "activeMessage":"Wartungsarbeiten aktiv",
-      "sheduledMessage":"Am 01.12.2023 von 16:00 bis 18:00 Uhr führen wir Wartungsarbeiten durch."
+      "sheduledMessage":"Am 02.01.2024 von 16:00 bis 18:00 Uhr führen wir Wartungsarbeiten durch."
    },
    "immune":[
-      "Quro",
-      "G4bby",
-      "DjDenny",
-      "BitPitcher",
-      "Hatchel"
+      "Quro"
    ],
    "permaban":[
    ],
