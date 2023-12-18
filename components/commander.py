@@ -244,13 +244,13 @@ def setTime(update, context):
     else:
         if minutes:
             minutes = int(minutes)  # Konvertiere den Eingabe-String in eine Ganzzahl
-            if minutes > 1440:
+            if minutes > 2880:
                 update.message.reply_text(
-                    "Alles über den heutigen Tag kann der Bot nicht sehen! Bitte wähle einen Wert zwischen 1 und 1440.")
+                    "Alles über den heutigen Tag kann der Bot erst ab 23:00 Uhr sehen (Maximal bis zum nächsten Tag)! Bitte wähle einen Wert zwischen 1 und 2880.")
             else:
                 if minutes < 1:
                     update.message.reply_text(
-                        "Bitte wähle einen Wert zwischen 1 und 1440.")
+                        "Bitte wähle einen Wert zwischen 1 und 2880.")
                 else:
                     userConfig = f"/root/WAO-Abobot/data/{id}/config.json"
                     f = open(userConfig, 'w+')
