@@ -4,8 +4,9 @@
 
 | Version   | Supported          |
 | --------- | ------------------ |
-| 23.05.x   | :white_check_mark: |
-| 23.06.x   | :white_check_mark: |
+| x.x.24-Beta  | :white_check_mark: (Limited) |
+| 12.12.23  | :white_check_mark: |
+| 28.11.23  | :white_check_mark: |
 
 Jedes Minor-Update wird 3 Minor Updates lang Supportet.
 
