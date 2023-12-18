@@ -4,6 +4,11 @@ import sys
 import time
 from datetime import datetime
 import traceback
+from modules.error import error
+from modules.update_module import checkUpdate, update, getUpdate
+from modules.showplan_check import check as check_showplan
+#OPTIONAL IMPORTS HERE
+
 from modules.help_module import help
 from modules.service_control_module import start, stop, restart
 from modules.blacklist_handler import ban
@@ -11,12 +16,8 @@ from modules.dbupdate_module import updatedb
 from modules.installer import install
 from modules.maintenance_module import reset, logclear
 from modules.public_announce import announce
-from modules.update_module import checkUpdate, update, getUpdate
 from modules.backup_module import backup
 from modules.showprocessor import process_show
-from modules.error import error
-from modules.update_check import checkUpdate
-from modules.showplan_check import check as check_showplan
 
 with open("/root/WAO-Abobot/data/banner.txt", "r") as banner_file:
     banner_content = banner_file.read()
