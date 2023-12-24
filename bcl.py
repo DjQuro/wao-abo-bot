@@ -57,8 +57,10 @@ def newday():
 
     if start_zeit <= aktuelle_zeit <= end_zeit or aktuelle_zeit == start_zeit:
         return True
+        print ("wahr")
     else:
         return False
+        print ("falsch")
 
 
 def send_update():
@@ -105,7 +107,7 @@ if __name__ == '__main__':
 
         # Nach dem Ausführen des initialen Befehls ermöglicht es dem Benutzer, weitere Befehle einzugeben
         while True:
-            user_input = input("Enter another command (or 'exit' to quit): ")
+            user_input = input("Enter another command ('exit' 'quit' or 'q' to quit): ")
             if user_input.lower() == 'exit':
                 break
             elif user_input:
@@ -114,7 +116,7 @@ if __name__ == '__main__':
     else:
         # Wenn keine Argumente übergeben wurden, starte direkt in der Kommandozeile
         while True:
-            user_input = input("Enter a command (or 'exit' 'quit' or 'q' to quit): ")
+            user_input = input("Enter a command ('exit' 'quit' or 'q' to quit): ")
 
             if user_input.lower() == 'exit' or 'quit' or 'q':
                 break
