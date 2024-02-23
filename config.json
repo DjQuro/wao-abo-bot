@@ -3,6 +3,7 @@
    "defaultTime":"15",
    "adminID":"<adminchatidhere>",
    "maxInactivityDays":30,
+   "updateBranch":"main",
    "maintenance":{
       "active":false,
       "sheduledMaintenance":false,
