@@ -269,38 +269,35 @@ def start(update, context):
     user_id = update.message.from_user.id
     chat_id = update.message.chat_id
     user = context.bot.get_chat_member(chat_id, user_id)
-    if user.status in ["administrator", "creator"]:
-        print(f"Welcoming {id}")
-        os.mkdir(f"/root/WAO-Abobot/data/{id}")
-        print(f"Creating /root/WAO-Abobot/data/{id}")
-        subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
-        f = open(subfile, 'w+')
-        f.write('{"subscriptions": []}')
-        f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
-        cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
-        f = open(cachefile, 'w+')
-        f.write('{"sent": []}')
-        f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
-        configfile = f"/root/WAO-Abobot/data/{id}/config.json"
-        f = open(configfile, 'w+')
-        f.write('{"minInfo": ' + config["defaultTime"] + '}')
-        f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
-        stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
-        with open("stations.json") as preset:
-            json_string = preset.read()
-        f = open(stationsfile, 'w+')
-        f.write(json_string)
-        f.close()
-        print(f"Creating /root/WAO-Abobot/data/{id}/stations.json")
-        print("READY!")
-        context.bot.send_message(chat_id=id,
-                                 text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
-                                      "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
-    else:
-        update.message.reply_text("Du bist kein Gruppenadmin")
+    print(f"Welcoming {id}")
+    os.mkdir(f"/root/WAO-Abobot/data/{id}")
+    print(f"Creating /root/WAO-Abobot/data/{id}")
+    subfile = f"/root/WAO-Abobot/data/{id}/subs.json"
+    f = open(subfile, 'w+')
+    f.write('{"subscriptions": []}')
+    f.close()
+    print(f"Creating /root/WAO-Abobot/data/{id}/subs.json")
+    cachefile = f"/root/WAO-Abobot/data/{id}/cache.json"
+    f = open(cachefile, 'w+')
+    f.write('{"sent": []}')
+    f.close()
+    print(f"Creating /root/WAO-Abobot/data/{id}/cache.json")
+    configfile = f"/root/WAO-Abobot/data/{id}/config.json"
+    f = open(configfile, 'w+')
+    f.write('{"minInfo": ' + config["defaultTime"] + '}')
+    f.close()
+    print(f"Creating /root/WAO-Abobot/data/{id}/config.json - Default value: {config['defaultTime']} Minutes")
+    stationsfile = f"/root/WAO-Abobot/data/{id}/stations.json"
+    with open("/root/WAO-Abobot/stations.json") as preset:
+        json_string = preset.read()
+    f = open(stationsfile, 'w+')
+    f.write(json_string)
+    f.close()
+    print(f"Creating /root/WAO-Abobot/data/{id}/stations.json")
+    print("READY!")
+    context.bot.send_message(chat_id=id,
+                             text="Herzlich Willkommen beim WAO Abo Bot! \n\r "
+                                  "Nutze /subscribe um einen DJ zu abonnieren.\n\r\n\r ")
 
 def unsubscribe(update, context):
     id = str(update.effective_chat.id)
