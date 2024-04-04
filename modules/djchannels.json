@@ -1,0 +1,48 @@
+{
+  "stations": {
+    "technobase.fm": 5,
+    "housetime.fm": 6,
+    "hardbase.fm": 7,
+    "trancebase.fm": 8,
+    "coretime.fm": 10,
+    "clubtime.fm": 11,
+    "teatime.fm": 13,
+    "replay.fm": 14
+  },
+  "quro": {
+    "bot_token": "<deinBotTokenHier>",
+    "defaultTime": "30",
+    "chatID": "<deineChatIDHier>",
+    "djnames": [
+      "Quro"
+    ],
+    "message": "Meine Sendung {show} auf {station} startet am {startTime} Uhr"
+  },
+  "hatchel": {
+    "bot_token": "<deinBotTokenHier>",
+    "defaultTime": "60",
+    "chatID": "<deineChatIDHier>",
+    "djnames": [
+      "Hatchel"
+    ],
+    "message": "Meine Sendung {show} auf {station} startet am {startTime} Uhr"
+  },
+  "aybee": {
+    "bot_token": "<deinBotTokenHier>",
+    "defaultTime": "45",
+    "chatID": "<deineChatIDHier>",
+    "djnames": [
+      "Aybee"
+    ],
+    "message": "Meine Sendung {show} auf {station} startet am {startTime} Uhr"
+  },
+  "bitPitcher": {
+    "bot_token": "<deinBotTokenHier>",
+    "defaultTime": "55",
+    "chatID": "<deineChatIDHier>",
+    "djnames": [
+      "BitPitcher"
+    ],
+    "message": "Meine Sendung {show} auf {station} startet am {startTime} Uhr"
+  }
+}
