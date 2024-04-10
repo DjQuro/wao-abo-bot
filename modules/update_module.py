@@ -47,7 +47,7 @@ def update(arg=None):
 def getUpdate(arg=None):
     update_available_commander = checkUpdate('commander')
     update_available_bcl = checkUpdate('bcl')
-    if update_available_commander or update_available_announcer or update_available_bcl:
+    if update_available_commander or update_available_bcl:
         print('\033[F', end='', flush=True)
         backup()
         print('\033[F', end='', flush=True)
