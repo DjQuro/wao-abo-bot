@@ -32,18 +32,12 @@ def checkUpdate(component):
         
 def update(arg=None):
     update_available_commander = checkUpdate('commander')
-    update_available_announcer = checkUpdate('announcer')
     update_available_bcl = checkUpdate('bcl')
     
     if update_available_commander:
         print(f"Commander: New Update available!")
     else:
         print(f"Commander: Up To Date!")
-        
-    if update_available_announcer:
-        print(f"Announcer: New Update available!")
-    else:
-        print(f"Announcer: Up To Date!")
         
     if update_available_bcl:
         print(f"BCL: New Update available!")
@@ -52,7 +46,6 @@ def update(arg=None):
 
 def getUpdate(arg=None):
     update_available_commander = checkUpdate('commander')
-    update_available_announcer = checkUpdate('announcer')
     update_available_bcl = checkUpdate('bcl')
     if update_available_commander or update_available_announcer or update_available_bcl:
         print('\033[F', end='', flush=True)
