@@ -4,6 +4,7 @@
 
 | Version   | Supported          |
 | --------- | ------------------ |
+| Beta-24   | Nicht für die produktive Nutzung! |
 | 04-24-2   | :white_check_mark: |
 | 04-24-1   |  :x:               |
 | 12.12.23  | :white_check_mark: |
