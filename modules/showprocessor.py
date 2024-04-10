@@ -23,7 +23,7 @@ def process_show(x, subs, minTime, sent, chatid, cache_file, station):
             dj = x["m"]
             start_time = datetime.fromtimestamp(startUnix).strftime("%H:%M")
             end_time = datetime.fromtimestamp(x["e"] // 1000).strftime("%H:%M")
-            message = f"⏰📣 Die Show {show} von {dj} auf {station} startet um {start_time} Uhr #weareone!"
+            message = f"⏰📣 Die Show {show} von {dj} auf {station} von {start_time} bis {end_time} Uhr startet in {startOffset} Minuten #weareone!"
             print(f"Announced {dj}, {show}, {uid} von {start_time} Uhr bis {end_time} Uhr @ {chatid}")
             encoded_message = urllib.parse.quote(message)
             content = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage?chat_id={chatid}&parse_mode=Markdown&text={encoded_message}"

@@ -1,11 +1,6 @@
 import json
-import logging
 import os
-import sys
 import time
-import urllib
-import urllib.parse
-from datetime import datetime
 from pathlib import Path
 from modules.error import error
 from modules.showprocessor import process_show

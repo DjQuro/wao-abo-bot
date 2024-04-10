@@ -1,7 +1,4 @@
 import json
-import os
-import sys
-import time
 
 with open("/root/WAO-Abobot/config.json") as f:
     json_string = f.read()
