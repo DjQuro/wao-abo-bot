@@ -307,7 +307,7 @@ def unsubscribe(update, context):
     # Lade die Liste der abonnierten DJs
     with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
         subs = json.load(f)
-    subscribed_djs = subs["subscriptions"]
+    subscribed_djs = sorted(subs["subscriptions"])
 
     # Erstelle ein Inline Keyboard mit den abonnierten DJs
     keyboard = []
@@ -323,39 +323,29 @@ def unsubscribe(update, context):
     # Erstelle eine Antwort-Tastatur mit dem Inline Keyboard
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Frage den Benutzer, welchen DJ er abbestellen m�chte
-    message = update.message.reply_text(
-        "Welcher DJ soll deabonniert werden?",
-        reply_markup=reply_markup
-    )
-
-    # Speichere die Nachrichten-ID f�r das sp�tere L�schen
-    context.user_data["message_id"] = message.message_id
-
+    # Sende die Antwortnachricht mit dem Inline Keyboard
+    update.message.reply_text('Welchen DJ möchtest du deabonnieren?', reply_markup=reply_markup)
 
 def button_unsubscribe(update, context):
     query = update.callback_query
-    dj = query.data[7:]
     id = str(query.message.chat_id)
+    username = str(query.from_user.username)
+    dj_to_remove = query.data.split('_')[1]
 
-    # Lade die vorhandenen Abonnements des Benutzers
+    # Lade die Liste der abonnierten DJs
     with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
         subs = json.load(f)
 
-    # Entferne den DJ aus den Abonnements
-    subs["subscriptions"].remove(dj)
+    # Entferne den DJ aus der Liste der Abonnements
+    if dj_to_remove in subs["subscriptions"]:
+        subs["subscriptions"].remove(dj_to_remove)
 
-    # Speichere die aktualisierte Abonnementliste
+    # Speichere die aktualisierten Abonnements
     with open(f"/root/WAO-Abobot/data/{id}/subs.json", "w") as f:
         json.dump(subs, f)
 
-    # L�sche die vorherige Nachricht mit dem Inline-Keyboard
-    context.bot.delete_message(chat_id=query.message.chat_id, message_id=context.user_data["message_id"])
-
-    # Sende eine Best�tigungsnachricht an den Benutzer
-    query.answer(text=f"{dj} wurde erfolgreich deabonniert.")
-    print(f"{query.message.from_user.username} hat {dj} deabonniert!")
-
+    # Sende eine Bestätigungsnachricht
+    query.answer(f'{dj_to_remove} wurde erfolgreich deabonniert!')
 
 def subscribe(update, context):
     id = str(update.effective_chat.id)
@@ -376,6 +366,7 @@ def subscribe(update, context):
     with open("/root/WAO-Abobot/djs.json") as f:
         all_djs = json.load(f)
     available_djs = [dj for dj in all_djs if dj not in subscribed_djs]
+    available_djs = sorted(available_djs)
 
     # Erstelle ein Inline Keyboard mit den verfügbaren DJs
     keyboard = []
@@ -427,7 +418,6 @@ def button_subscribe(update, context):
     else:
         # Wenn der DJ bereits abonniert ist, sende eine Fehlermeldung an den Benutzer
         query.answer(text=f"{dj} ist bereits abonniert.")
-
 
 def ban(update, context):
     id = str(update.effective_chat.id)
@@ -504,26 +494,21 @@ def checksubs(update, context):
 
 
 def list_subs(update, context):
-    chat_id = str(update.effective_chat.id)
-    i = 0
-    subnames = []
-    with open(f"/root/WAO-Abobot/data/{chat_id}/subs.json") as subfile:
-        json_string = subfile.read()
-    subs = json.loads(json_string)
-    for sub in subs["subscriptions"]:
-        if sub not in blacklist['blacklist']:
-            if i == 0:
-                subnames = sub
-            else:
-                subnames = subnames + "\n\r"
-                subnames = subnames + sub
-            i = i + 1
-    if i == 0:
-        update.message.reply_text("Du hast keinen DJ abonniert")
-    elif i == 1:
-        update.message.reply_text("Du hast einen DJ abonniert\n\r\n\r" + subnames)
+    id = str(update.effective_chat.id)
+    username = str(update.message.from_user.username)
+    print(f"{username}@{id} ran list_subs")
+
+    # Lade die Liste der abonnierten DJs
+    with open(f"/root/WAO-Abobot/data/{id}/subs.json") as f:
+        subs = json.load(f)
+
+    # Überprüfe, ob der Benutzer abonnierte DJs hat
+    if subs["subscriptions"]:
+        subscribed_djs = sorted(subs["subscriptions"])
+        dj_list = "\n".join(subscribed_djs)
+        update.message.reply_text(f'Du hast folgende DJs abonniert:\n{dj_list}')
     else:
-        update.message.reply_text("Du hast " + str(i) + " DJs abonniert\n\r\n\r" + subnames)
+        update.message.reply_text('Du hast keinen DJ abonniert.')
 
 
 def list_bans(update, context):
