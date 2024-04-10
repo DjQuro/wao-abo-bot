@@ -82,13 +82,11 @@ def updatedb(arg=None):  # Updated function definition
                                         print('\033[F', end='', flush=True)
                                         print(f"No Action for {dj_name}                                     ")
 
-
-                    else:
-                        print(f"ERROR {status} from  {endpoint_url}                                          ")
-
-                # Speichere die aktualisierte djs.json
+                # Speichere die aktualisierte djs.json und sortiere Sie alphabetisch
+                sorted_djs = dict(sorted(djs.items()))
                 with open(djs_file, "w") as f:
-                    json.dump(djs, f)
+                    json.dump(sorted_djs, f)
+
                 day += 1
             print('\033[F', end='', flush=True)
             print(f"Database update successful! New Entrys:{new} Purged Entrys:{deleted} Registered DJs:{new + dj_count}")
@@ -111,3 +109,17 @@ def updatedb(arg=None):  # Updated function definition
 
 def handle_exception(error_message):
     print(error_message)
+
+# Funktion zum Sortieren der JSON-Datei alphabetisch hinzugefügt
+def sort_json_file(file_path):
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        sorted_data = dict(sorted(data.items()))
+        with open(file_path, "w") as f:
+            json.dump(sorted_data, f, indent=4)
+    except Exception as e:
+        handle_exception(f"Error sorting JSON file: {e}")
+
+# Aufruf der Funktion, um die djs.json-Datei zu sortieren
+sort_json_file(djs_file)
