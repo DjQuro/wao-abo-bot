@@ -38,6 +38,11 @@ Als Ankündigungsbot in einem Channel ist dieser Bot leider nicht nutzbar! Hierf
 
 # To Do
 - Performance anpassen (Der Abstand zwischen den gesendeten Nachrichten ist teilweise sehr hoch)
+- Umstellung von Configs und dynamischen Listen auf SQL
+- Rewrite
+- Discord Version
+- Asynchrone Funktionen
+- Integrierte Channel-Bot Funktion mit Anmeldung per Befehl (/cregister)
+- Web-Panel
 - Wir brauchen mehr Gummibären!
 - Supportfunktion für Betreiber
-
