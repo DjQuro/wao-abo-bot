@@ -18,25 +18,23 @@ function sendNotification(show, stationId) {
         // Logge die Show-Daten
         logger.info(`Roh-Daten: ${JSON.stringify(show)}`);
 
-        // Verwende die Felder ohne Standardwerte
         const showName = show.n;
         const djName = show.m;
 
-        // Unix-Zeit umwandeln, falls vorhanden
+        // Start- und Endzeit der Show umwandeln
         const startUnix = show.s;
-        const startTime = show.s ? DateTime.fromMillis(show.s).toFormat('HH:mm') : 'Invalid DateTime';
+        const endUnix = show.e;
+        const startTime = DateTime.fromMillis(startUnix).toFormat('HH:mm');
+        const endTime = DateTime.fromMillis(endUnix).toFormat('HH:mm');
 
-        // Holen des Sendernamens
+        // Sendername holen
         const stationName = stations[stationId] || 'Unbekannter Sender';
 
-        // Logge jeden Wert separat zur Verifikation
-        logger.info(`Showname: ${show.n}`);
-        logger.info(`DJ-Name: ${show.m}`);
-        logger.info(`Startzeit: ${startTime}`);
-        logger.info(`Sender: ${stationName}`);
+        // Überprüfen, ob das dateLabel vorhanden ist
+        const dateLabel = show.dateLabel || 'heute';
 
-        // Erstelle die Benachrichtigung mit Sendername
-        const notificationMessage = `📣 Benachrichtigung: Die Show ${showName} von ${djName} läuft auf ${stationName} und startet ${show.dateLabel} um ${startTime}!`;
+        // Erstelle die Benachrichtigung mit Start- und Endzeit
+        const notificationMessage = `📣 Benachrichtigung: Die Show ${showName} von ${djName} auf ${stationName} startet ${dateLabel} um ${startTime} Uhr und geht bis ${endTime} Uhr!`;
         console.log(notificationMessage);
         logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
     } catch (error) {

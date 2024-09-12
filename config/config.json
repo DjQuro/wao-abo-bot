@@ -1,6 +1,5 @@
-
 {
-	"apiBaseUrl": "https://api.weareone.fm/v1",
-    "minInfoTime": 60,
-    "subscriptions": ["Futuristic Polar Bears", "Menius"]
+    "apiBaseUrl": "https://api.weareone.fm/v1",
+    "telegramToken": "DEIN_TELEGRAM_BOT_TOKEN",
+    "telegramChatId": "DEINE_CHAT_ID"
 }

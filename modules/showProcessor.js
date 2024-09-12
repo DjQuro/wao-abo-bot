@@ -1,49 +1,33 @@
+const moment = require('moment');
 const logger = require('./logger');
 const notification = require('./notification');
-const blacklistHandler = require('./blacklistHandler');
-const cacheHelper = require('./cacheHelper');
-const moment = require('moment');
+const telegram = require('./telegram');  // Telegram-Modul importieren
 
 async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
     const processedShows = cache.processedShows || [];
+    const extendedShows = cache.extendedShows || [];
+    const cancelledShows = cache.cancelledShows || [];
 
     const processPromises = showData.map(({ stationId, shows }) => {
         return new Promise((resolve, reject) => {
             try {
-                // Logge die Shows-Daten inklusive Station-ID
-                logger.info(`Station-ID: ${stationId}, Shows: ${JSON.stringify(shows, null, 2)}`);
-
-                if (!shows || shows.length === 0) {
-                    logger.error(`Fehler: Keine Shows für Station ${stationId} gefunden.`);
-                    return resolve();
-                }
-
                 shows.forEach(show => {
-                    const showName = show.n || 'Unbekannte Show';
-                    if (processedShows.includes(showName)) {
-                        logger.info(`Die Show ${showName} wurde bereits verarbeitet.`);
-                        return resolve();
-                    }
-
-                    // Zeitüberprüfung: Heute oder Morgen?
-                    const showTime = moment(show.s);
+                    const showName = show.n;
+                    const showStartTime = moment(show.s);
                     const now = moment();
-                    let dateLabel = 'heute';
-                    if (showTime.isAfter(now, 'day')) {
-                        dateLabel = 'morgen';
-                    }
 
-                    // Füge das dateLabel zu den Show-Daten hinzu
-                    show.dateLabel = dateLabel;
-
-                    if (!blacklistHandler.isBlacklisted(show, blacklist)) {
-                        logger.info(`Verarbeite Show: ${showName} auf Station ${stationId}`);
+                    // Ankündigung 15 Minuten vorher
+                    const timeUntilStart = showStartTime.diff(now, 'minutes');
+                    if (timeUntilStart <= 15 && !processedShows.some(ps => ps.id === show.mi && ps.start === show.s)) {
+                        logger.info(`Ankündigung für Show: ${showName}`);
                         notification.sendNotification(show, stationId);
-                        processedShows.push(show.n); // Show zur Liste der verarbeiteten Shows hinzufügen
-                    } else {
-                        logger.info(`Die Show ${showName} steht auf der Blacklist und wird übersprungen.`);
+                        telegram.sendTelegramMessage(`📣 Benachrichtigung: Die Show ${showName} startet in 15 Minuten auf ${stationId}!`, config);
+                        processedShows.push({ id: show.mi, start: show.s, end: show.e });
                     }
+
+                    // Verlängerung und Absage - wie zuvor
+                    // ...
                 });
 
                 resolve();
@@ -57,7 +41,9 @@ async function processShowsInParallel(showData, config, blacklist) {
 
     await cacheHelper.saveCache({
         ...cache,
-        processedShows
+        processedShows,
+        extendedShows,
+        cancelledShows
     });
 }
 
