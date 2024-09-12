@@ -1,18 +1,42 @@
 const { DateTime } = require("luxon");
 const logger = require('./logger');
 
-function sendNotification(show) {
+// Mapping von Sender-IDs zu Sendernamen
+const stations = {
+    5: 'TechnoBase.FM',
+    6: 'HouseTime.FM',
+    7: 'HardBase.FM',
+    8: 'TranceBase.FM',
+    10: 'CoreTime.FM',
+    11: 'ClubTime.FM',
+    13: 'TeaTime.FM',
+    14: 'Replay.FM'
+};
+
+function sendNotification(show, stationId) {
     try {
-        // Verwende direkt die Felder ohne Standardwerte
-        const showName = show.n; 
+        // Logge die Show-Daten
+        logger.info(`Roh-Daten: ${JSON.stringify(show)}`);
+
+        // Verwende die Felder ohne Standardwerte
+        const showName = show.n;
         const djName = show.m;
 
         // Unix-Zeit umwandeln, falls vorhanden
         const startUnix = show.s;
-        const startTime = startUnix ? DateTime.fromMillis(startUnix).toFormat('HH:mm') : 'Invalid DateTime';
+        const startTime = show.s ? DateTime.fromMillis(show.s).toFormat('HH:mm') : 'Invalid DateTime';
 
-        // Erstelle die Benachrichtigung ohne Fallback
-        const notificationMessage = `📣 Benachrichtigung: Die Show ${showName} von ${djName} startet ${show.dateLabel} um ${startTime}!`;
+        // Holen des Sendernamens
+        const stationName = stations[stationId] || 'Unbekannter Sender';
+
+        // Logge jeden Wert separat zur Verifikation
+        logger.info(`Showname: ${show.n}`);
+        logger.info(`DJ-Name: ${show.m}`);
+        logger.info(`Startzeit: ${startTime}`);
+        logger.info(`Sender: ${stationName}`);
+
+        // Erstelle die Benachrichtigung mit Sendername
+        const notificationMessage = `📣 Benachrichtigung: Die Show ${showName} von ${djName} läuft auf ${stationName} und startet ${show.dateLabel} um ${startTime}!`;
         console.log(notificationMessage);
         logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
     } catch (error) {
@@ -21,6 +45,3 @@ function sendNotification(show) {
 }
 
 module.exports = { sendNotification };
-
-
-

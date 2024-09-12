@@ -8,35 +8,44 @@ async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
     const processedShows = cache.processedShows || [];
 
-    const processPromises = showData.map(show => {
+    const processPromises = showData.map(({ stationId, shows }) => {
         return new Promise((resolve, reject) => {
             try {
-                // Debugging: Logge die Show-Daten direkt, wenn sie abgerufen werden
-                //logger.info(`Verarbeite Show-Daten (Rohdaten): ${JSON.stringify(show, null, 2)}`);
+                // Logge die Shows-Daten inklusive Station-ID
+                logger.info(`Station-ID: ${stationId}, Shows: ${JSON.stringify(shows, null, 2)}`);
 
-                // Überprüfe, ob die Show-Daten vollständig sind
-                const showName = show.n || 'Unbekannte Show';
-                const djName = show.m || 'Unbekannter DJ';
-
-                // Überprüfe, ob die Show bereits verarbeitet wurde
-                if (processedShows.includes(showName)) {
-                    logger.info(`Die Show ${showName} wurde bereits verarbeitet.`);
+                if (!shows || shows.length === 0) {
+                    logger.error(`Fehler: Keine Shows für Station ${stationId} gefunden.`);
                     return resolve();
                 }
 
-                // Überprüfe, ob das Zeitfeld existiert und korrekt ist
-                const startTime = show.s ? moment(show.s).format('YYYY-MM-DD HH:mm:ss') : 'Unbekannte Zeit';
+                shows.forEach(show => {
+                    const showName = show.n || 'Unbekannte Show';
+                    if (processedShows.includes(showName)) {
+                        logger.info(`Die Show ${showName} wurde bereits verarbeitet.`);
+                        return resolve();
+                    }
 
-                if (!blacklistHandler.isBlacklisted(show, blacklist)) {
-                    processShows([show], config);
+                    // Zeitüberprüfung: Heute oder Morgen?
+                    const showTime = moment(show.s);
+                    const now = moment();
+                    let dateLabel = 'heute';
+                    if (showTime.isAfter(now, 'day')) {
+                        dateLabel = 'morgen';
+                    }
 
-                    // Sende die Benachrichtigung
-                    notification.sendNotification(show);
+                    // Füge das dateLabel zu den Show-Daten hinzu
+                    show.dateLabel = dateLabel;
 
-                    processedShows.push(show.n); // Show zur Liste der verarbeiteten Shows hinzufügen
-                } else {
-                    logger.info(`Die Show ${showName} von ${djName} steht auf der Blacklist und wird übersprungen.`);
-                }
+                    if (!blacklistHandler.isBlacklisted(show, blacklist)) {
+                        logger.info(`Verarbeite Show: ${showName} auf Station ${stationId}`);
+                        notification.sendNotification(show, stationId);
+                        processedShows.push(show.n); // Show zur Liste der verarbeiteten Shows hinzufügen
+                    } else {
+                        logger.info(`Die Show ${showName} steht auf der Blacklist und wird übersprungen.`);
+                    }
+                });
+
                 resolve();
             } catch (error) {
                 reject(error);
@@ -52,10 +61,4 @@ async function processShowsInParallel(showData, config, blacklist) {
     });
 }
 
-function processShows(shows, config) {
-    shows.forEach(show => {
-        logger.info(`Verarbeite Show: ${show.n || 'Unbekannte Show'} von ${show.m || 'Unbekannter DJ'}`);
-    });
-}
-
-module.exports = { processShows, processShowsInParallel };
+module.exports = { processShowsInParallel };

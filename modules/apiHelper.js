@@ -1,59 +1,32 @@
 const fetch = require('node-fetch');
 const logger = require('./logger');
-const cacheHelper = require('./cacheHelper');
 
-// Cache-Dauer: Jede Minute wird der Cache überprüft
-const CACHE_DURATION = 60 * 1000; // 60 Sekunden in Millisekunden
-
-// Funktion zum Abrufen der Show-Daten
-async function fetchShowData(apiUrl) {
+// Funktion zum Abrufen der Shows für eine Station
+async function fetchShowData(stationId, apiUrl) {
     try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`Fehler beim Abrufen der API-Daten: ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        logger.error(`API-Fehler: ${error.message}`);
-        return null;
-    }
-}
+        const todayUrl = `${apiUrl}/showplan/${stationId}/1`; // Abruf für heute
+        const tomorrowUrl = `${apiUrl}/showplan/${stationId}/2`; // Abruf für morgen
 
-// Funktion zum Abrufen von Shows für mehrere Sender (heute und morgen)
-async function fetchShowsForStations(stationIds, config) {
-    const cache = await cacheHelper.loadCache();
-    const now = Date.now();
-
-    if (cache && cache.timestamp && cacheHelper.isCacheValid(cache.timestamp)) {
-        logger.info('Verwende gecachte Show-Daten');
-        return cache.data;
-    }
-
-    const apiPromises = stationIds.map(stationId => {
-        const todayUrl = `${config.apiBaseUrl}/showplan/${stationId}/1`;
-        const tomorrowUrl = `${config.apiBaseUrl}/showplan/${stationId}/2`;
+        // Logge die URLs zur Verifizierung
         logger.info(`Abrufen von Daten von: ${todayUrl} und ${tomorrowUrl}`);
 
-        return Promise.all([
-            fetchShowData(todayUrl).then(shows => shows.map(show => ({ ...show, dateLabel: 'heute' }))),
-            fetchShowData(tomorrowUrl).then(shows => shows.map(show => ({ ...show, dateLabel: 'morgen' })))
-        ]);
-    });
+        // Daten für heute abrufen
+        const responseToday = await fetch(todayUrl);
+        const todayData = await responseToday.json();
 
-    const allShowData = await Promise.all(apiPromises);
-    const flatShowData = allShowData.flat(2);
+        // Daten für morgen abrufen
+        const responseTomorrow = await fetch(tomorrowUrl);
+        const tomorrowData = await responseTomorrow.json();
 
-    // Debugging: Logge die rohen Show-Daten, um zu überprüfen, ob Felder fehlen
-    logger.info('Rohe Show-Daten:', JSON.stringify(flatShowData, null, 2));
-
-    await cacheHelper.saveCache({
-        timestamp: now,
-        data: flatShowData
-    });
-
-    return flatShowData;
+        // Rückgabe der Daten inklusive der Station-ID
+        return {
+            stationId, // Sender-ID
+            shows: [...todayData, ...tomorrowData] // Shows von heute und morgen
+        };
+    } catch (error) {
+        logger.error(`API-Fehler: ${error.message}`);
+        throw new Error(`Fehler beim Abrufen der API-Daten: ${error.message}`);
+    }
 }
 
-
-
-module.exports = { fetchShowData, fetchShowsForStations };
+module.exports = { fetchShowData };
