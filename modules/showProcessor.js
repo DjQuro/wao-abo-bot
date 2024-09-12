@@ -1,9 +1,8 @@
-// modules/showProcessor.js
 const logger = require('./logger');
 const notification = require('./notification');
 const blacklistHandler = require('./blacklistHandler');
-const cacheHelper = require('./cacheHelper');  // Importiere cacheHelper
-const moment = require('moment'); // Für die Zeitformatierung (ggf. installieren: npm install moment)
+const cacheHelper = require('./cacheHelper');
+const moment = require('moment');
 
 async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
@@ -12,9 +11,16 @@ async function processShowsInParallel(showData, config, blacklist) {
     const processPromises = showData.map(show => {
         return new Promise((resolve, reject) => {
             try {
+                // Debugging: Logge die Show-Daten direkt, wenn sie abgerufen werden
+                //logger.info(`Verarbeite Show-Daten (Rohdaten): ${JSON.stringify(show, null, 2)}`);
+
                 // Überprüfe, ob die Show-Daten vollständig sind
-                if (!show || !show.n || !show.m || processedShows.includes(show.n)) {
-                    logger.info(`Die Show ${show.n || 'Unbekannt'} wurde bereits verarbeitet oder ist ungültig.`);
+                const showName = show.n || 'Unbekannte Show';
+                const djName = show.m || 'Unbekannter DJ';
+
+                // Überprüfe, ob die Show bereits verarbeitet wurde
+                if (processedShows.includes(showName)) {
+                    logger.info(`Die Show ${showName} wurde bereits verarbeitet.`);
                     return resolve();
                 }
 
@@ -23,10 +29,13 @@ async function processShowsInParallel(showData, config, blacklist) {
 
                 if (!blacklistHandler.isBlacklisted(show, blacklist)) {
                     processShows([show], config);
-                    notification.sendNotification(`${show.dateLabel}: ${show.n} von ${show.m} startet um ${startTime}!`);
+
+                    // Sende die Benachrichtigung
+                    notification.sendNotification(show);
+
                     processedShows.push(show.n); // Show zur Liste der verarbeiteten Shows hinzufügen
                 } else {
-                    logger.info(`Die Show ${show.n} von ${show.m} steht auf der Blacklist und wird übersprungen.`);
+                    logger.info(`Die Show ${showName} von ${djName} steht auf der Blacklist und wird übersprungen.`);
                 }
                 resolve();
             } catch (error) {
@@ -45,11 +54,8 @@ async function processShowsInParallel(showData, config, blacklist) {
 
 function processShows(shows, config) {
     shows.forEach(show => {
-        logger.info(`Verarbeite Show: ${show.n} von ${show.m}`);
-        // Logik zur Show-Verarbeitung hier
+        logger.info(`Verarbeite Show: ${show.n || 'Unbekannte Show'} von ${show.m || 'Unbekannter DJ'}`);
     });
 }
 
 module.exports = { processShows, processShowsInParallel };
-
-

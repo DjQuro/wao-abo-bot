@@ -1,14 +1,26 @@
-const { DateTime } = require("luxon"); // Für Zeitumwandlungen
+const { DateTime } = require("luxon");
+const logger = require('./logger');
 
 function sendNotification(show) {
-    const showName = show.n;
-    const djName = show.m;
+    try {
+        // Verwende direkt die Felder ohne Standardwerte
+        const showName = show.n; 
+        const djName = show.m;
 
-    // Zeitstempel korrigieren (Unix-Zeit durch 1000 teilen)
-    const startUnix = show.s / 1000;
-    const startTime = DateTime.fromSeconds(startUnix).toFormat('HH:mm');
+        // Unix-Zeit umwandeln, falls vorhanden
+        const startUnix = show.s;
+        const startTime = startUnix ? DateTime.fromMillis(startUnix).toFormat('HH:mm') : 'Invalid DateTime';
 
-    console.log(`📣 Benachrichtigung: Die Show ${showName} von ${djName} startet um ${startTime}!`);
+        // Erstelle die Benachrichtigung ohne Fallback
+        const notificationMessage = `📣 Benachrichtigung: Die Show ${showName} von ${djName} startet ${show.dateLabel} um ${startTime}!`;
+        console.log(notificationMessage);
+        logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
+    } catch (error) {
+        logger.error(`Fehler beim Senden der Benachrichtigung: ${error.message}`);
+    }
 }
 
 module.exports = { sendNotification };
+
+
+
