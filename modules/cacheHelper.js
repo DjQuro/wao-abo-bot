@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const logger = require('./logger');
 
 // Datei, in der der Cache gespeichert wird
 const cacheFilePath = path.join(__dirname, '../cache/cache.json');
@@ -8,22 +9,31 @@ const cacheFilePath = path.join(__dirname, '../cache/cache.json');
 async function loadCache() {
     try {
         const data = await fs.readFile(cacheFilePath, 'utf8');
+        logger.info('Cache erfolgreich geladen.');
         return JSON.parse(data);
     } catch (error) {
-        return {}; // Falls kein Cache vorhanden ist, leere Daten zurückgeben
+        if (error.code === 'ENOENT') {
+            logger.info('Cache-Datei existiert nicht, starte mit leerem Cache.');
+            return {}; // Falls kein Cache vorhanden ist, leere Daten zurückgeben
+        } else {
+            logger.error('Fehler beim Laden des Caches:', error);
+            return {}; // Rückgabe eines leeren Caches bei Fehler
+        }
     }
 }
 
 // Funktion zum Speichern des Caches
 async function saveCache(cacheData) {
     try {
+        logger.info('Speichere Cache-Daten...');
         await fs.writeFile(cacheFilePath, JSON.stringify(cacheData, null, 2));
+        logger.info('Cache erfolgreich gespeichert.');
     } catch (error) {
-        console.error('Fehler beim Speichern des Caches:', error);
+        logger.error('Fehler beim Speichern des Caches:', error);
     }
 }
 
-// Funktion zum Überprüfen, ob eine Show im Cache vorhanden ist
+// Funktion zum Überprüfen, ob der Cache noch gültig ist
 function isCacheValid(cacheTimestamp, cacheDuration) {
     const now = Date.now();
     return (now - cacheTimestamp) < cacheDuration;

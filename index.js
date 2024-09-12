@@ -1,3 +1,10 @@
+const configLoader = require('./modules/configLoader');
+const apiHelper = require('./modules/apiHelper');
+const showProcessor = require('./modules/showProcessor');
+const blacklistHandler = require('./modules/blacklistHandler');
+const logger = require('./modules/logger');
+
+// Hauptfunktion des Programms
 async function main() {
     try {
         // Lade die Konfiguration
@@ -26,3 +33,6 @@ async function main() {
         logger.error(`Fehler im Hauptprozess: ${error.message}`); // Fehlerprotokollierung
     }
 }
+
+// Starte das Programm
+main();
