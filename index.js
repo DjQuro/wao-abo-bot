@@ -3,6 +3,8 @@ const apiHelper = require('./modules/apiHelper');
 const showProcessor = require('./modules/showProcessor');
 const blacklistHandler = require('./modules/blacklistHandler');
 const logger = require('./modules/logger');
+const cacheHelper = require('./modules/cacheHelper');
+
 
 // Hauptfunktion des Programms
 async function main() {

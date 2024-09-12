@@ -2,8 +2,8 @@ const fetch = require('node-fetch');
 const logger = require('./logger');
 const cacheHelper = require('./cacheHelper');
 
-// Cache-Dauer (z.B. 15 Minuten)
-const CACHE_DURATION = 15 * 60 * 1000; // 15 Minuten in Millisekunden
+// Cache-Dauer: Jede Minute wird der Cache überprüft
+const CACHE_DURATION = 60 * 1000; // 60 Sekunden in Millisekunden
 
 // Funktion zum Abrufen der Show-Daten
 async function fetchShowData(apiUrl) {
@@ -19,34 +19,41 @@ async function fetchShowData(apiUrl) {
     }
 }
 
-// Funktion zum Abrufen von Shows für mehrere Sender
+// Funktion zum Abrufen von Shows für mehrere Sender (heute und morgen)
 async function fetchShowsForStations(stationIds, config) {
     const cache = await cacheHelper.loadCache();
     const now = Date.now();
 
-    // Überprüfe, ob wir bereits gecachte Daten haben
-    if (cache && cache.timestamp && cacheHelper.isCacheValid(cache.timestamp, CACHE_DURATION)) {
+    if (cache && cache.timestamp && cacheHelper.isCacheValid(cache.timestamp)) {
         logger.info('Verwende gecachte Show-Daten');
-        return cache.data; // Verwende die gecachten Daten
+        return cache.data;
     }
 
-    // Falls keine gültigen Daten im Cache vorhanden sind, API-Anfragen senden
     const apiPromises = stationIds.map(stationId => {
-        const apiUrl = `${config.apiBaseUrl}/showplan/${stationId}/1`;
-        logger.info(`Abrufen von Daten von: ${apiUrl}`);
-        return fetchShowData(apiUrl);
+        const todayUrl = `${config.apiBaseUrl}/showplan/${stationId}/1`;
+        const tomorrowUrl = `${config.apiBaseUrl}/showplan/${stationId}/2`;
+        logger.info(`Abrufen von Daten von: ${todayUrl} und ${tomorrowUrl}`);
+
+        return Promise.all([
+            fetchShowData(todayUrl).then(shows => shows.map(show => ({ ...show, dateLabel: 'heute' }))),
+            fetchShowData(tomorrowUrl).then(shows => shows.map(show => ({ ...show, dateLabel: 'morgen' })))
+        ]);
     });
 
     const allShowData = await Promise.all(apiPromises);
-    const flatShowData = allShowData.flat();
+    const flatShowData = allShowData.flat(2);
 
-    // Speichere die Show-Daten im Cache
+    // Debugging: Logge die rohen Show-Daten, um zu überprüfen, ob Felder fehlen
+    logger.info('Rohe Show-Daten:', JSON.stringify(flatShowData, null, 2));
+
     await cacheHelper.saveCache({
         timestamp: now,
         data: flatShowData
     });
 
-    return flatShowData; // Gebe die neuen Daten zurück
+    return flatShowData;
 }
+
+
 
 module.exports = { fetchShowData, fetchShowsForStations };

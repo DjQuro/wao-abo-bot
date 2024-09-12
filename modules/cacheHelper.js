@@ -34,9 +34,19 @@ async function saveCache(cacheData) {
 }
 
 // Funktion zum Überprüfen, ob der Cache noch gültig ist
-function isCacheValid(cacheTimestamp, cacheDuration) {
+function isCacheValid(cacheTimestamp) {
     const now = Date.now();
-    return (now - cacheTimestamp) < cacheDuration;
+    const cacheDate = new Date(cacheTimestamp);
+
+    // Cache ist nur bis Mitternacht gültig
+    const currentDate = new Date();
+    if (currentDate.getDate() !== cacheDate.getDate()) {
+        return false;
+    }
+
+    // Cache sollte mindestens jede Minute erneuert werden
+    const cacheAgeInMs = now - cacheTimestamp;
+    return cacheAgeInMs < 60 * 1000; // 60 Sekunden Cache-Dauer
 }
 
 module.exports = { loadCache, saveCache, isCacheValid };

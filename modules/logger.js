@@ -1,23 +1,19 @@
-const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, printf, colorize } = format;
+const moment = require('moment-timezone');
 
-// Definiere das Ausgabeformat für das Logging
-const logFormat = printf(({ level, message, timestamp }) => {
-    return `${timestamp} [${level}]: ${message}`;
-});
+// Funktion, die das Logging übernimmt und die Zeit anpasst
+function logWithCorrectTime(level, message) {
+    // Zeit in der Zeitzone 'Europe/Berlin' formatieren
+    const currentTime = moment().tz('Europe/Berlin').format('DD.MM.YYYY - HH:mm:ss');
+    // Konsolenausgabe mit Zeit, Log-Level und Nachricht
+    console.log(`[${currentTime}] [${level}]: ${message}`);
+}
 
-// Logger-Konfiguration
-const logger = createLogger({
-    level: 'info',
-    format: combine(
-        timestamp(),
-        logFormat
-    ),
-    transports: [
-        new transports.Console({ format: combine(colorize(), logFormat) }), // Ausgabe in der Konsole
-        new transports.File({ filename: 'error.log', level: 'error' }), // Fehlerprotokollierung in Datei
-        new transports.File({ filename: 'combined.log' }) // Alle Logs in einer Datei
-    ]
-});
+// Exportiere die Info- und Error-Funktionen
+module.exports = {
+    // Info-Log
+    info: (message) => logWithCorrectTime('info', message),
 
-module.exports = logger;
+    // Error-Log
+    error: (message) => logWithCorrectTime('error', message)
+};
+
