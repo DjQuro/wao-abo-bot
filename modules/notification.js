@@ -1,5 +1,6 @@
 const { DateTime } = require("luxon");
 const logger = require('./logger');
+const telegram = require('./telegram'); // Du hast vergessen, telegram zu importieren
 
 // Mapping von Sender-IDs zu Sendernamen
 const stations = {
@@ -13,7 +14,7 @@ const stations = {
     14: 'Replay.FM'
 };
 
-function sendNotification(show, stationId) {
+function sendNotification(show, stationId, config) {  // Config als Parameter
     try {
         // Logge die Show-Daten
         logger.info(`Roh-Daten: ${JSON.stringify(show)}`);
@@ -28,13 +29,16 @@ function sendNotification(show, stationId) {
         const endTime = DateTime.fromMillis(endUnix).toFormat('HH:mm');
 
         // Sendername holen
-        const stationName = stations[stationId] || 'Unbekannter Sender';
+        const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
 
         // Überprüfen, ob das dateLabel vorhanden ist
         const dateLabel = show.dateLabel || 'heute';
 
         // Erstelle die Benachrichtigung mit Start- und Endzeit
         const notificationMessage = `📣 Benachrichtigung: Die Show ${showName} von ${djName} auf ${stationName} startet ${dateLabel} um ${startTime} Uhr und geht bis ${endTime} Uhr!`;
+
+        // Sende die Nachricht an den Telegram-Bot
+        telegram.sendTelegramMessage(notificationMessage, config);
         console.log(notificationMessage);
         logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
     } catch (error) {
