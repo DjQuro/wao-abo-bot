@@ -8,7 +8,7 @@ const updateModule = require('./modules/updateModule');
 // Hauptfunktion des Programms
 async function main() {
 
-    const versionUrl = 'https://raw.githubusercontent.com/DjQuro/wao-abo-bot/main/versions.json'; // Remote-URL zu deiner versions.json
+    const versionUrl = 'https://raw.githubusercontent.com/DjQuro/wao-abo-bot/2.0_JS-Rework/config/versions.json'; // Remote-URL zu deiner versions.json
     const localVersionPath = './config/versions.json'; // Pfad zur lokalen versions.json
 
     // Überprüfe auf Updates

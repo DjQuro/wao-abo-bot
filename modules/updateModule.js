@@ -25,10 +25,8 @@ async function checkForUpdate(versionUrl, localVersionPath) {
         const localVersion = await loadLocalVersion(localVersionPath);
 
         if (remoteVersion.bcl !== localVersion.bcl) {
-            console.log("Neues Update verfügbar!");
             return true;
         } else {
-            console.log("Keine Updates verfügbar.");
             return false;
         }
     } catch (error) {
