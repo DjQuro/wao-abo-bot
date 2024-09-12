@@ -1,6 +1,7 @@
 const moment = require('moment');
 const logger = require('./logger');
 const notification = require('./notification');
+const cacheHelper = require('./cacheHelper');
 const telegram = require('./telegram');  // Telegram-Modul importieren
 
 async function processShowsInParallel(showData, config, blacklist) {
