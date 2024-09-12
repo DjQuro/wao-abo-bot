@@ -1,0 +1,5 @@
+{
+    "apiBaseUrl": "https://api.weareone.fm/v1",
+    "telegramToken": "DEIN_TELEGRAM_BOT_TOKEN",
+    "telegramChatId": "DEINE_CHAT_ID"
+}
