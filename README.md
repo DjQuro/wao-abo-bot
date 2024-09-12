@@ -1,3 +1,8 @@
+# EOL der Python-Version
+## Die aktuelle Version des Bots ist in Python geschrieben! Ich habe mich entschieden den Bot ab jetzt in JS weiter zu entwickeln!
+## Deshalb wird der Support für die Python-Umgebung zum Release der JS Version eingestellt! Der Wechsel in Produktiv erfolgt nach Planung am 21.12.2024!
+## Der derzeitige Entwickungsstand kann unter dem Branch 2.0_JS-Rework eingesehen werden!
+
 [![Python application](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/python-app.yml)
 [![Bandit](https://github.com/DjQuro/wao-abo-bot/actions/workflows/bandit.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/bandit.yml)
 [![CodeQL](https://github.com/DjQuro/wao-abo-bot/actions/workflows/codeql.yml/badge.svg)](https://github.com/DjQuro/wao-abo-bot/actions/workflows/codeql.yml)
