@@ -1,0 +1,16 @@
+{
+  "name": "wao-abo-bot",
+  "version": "1.0.0",
+  "description": "Ein Projekt zur Show-Verarbeitung und Benachrichtigung von Sendungen der We.aRe.oNe Gruppe",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "luxon": "^3.5.0",
+    "node-fetch": "^2.6.1",
+    "winston": "^3.14.2"
+  },
+  "author": "Zoey",
+  "license": "ISC"
+}
