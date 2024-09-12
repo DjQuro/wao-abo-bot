@@ -21,3 +21,6 @@ Thumbs.db
 # Editor-specific
 .vscode/
 .idea/
+
+# Log-Dateien ignorieren
+*.log

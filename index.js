@@ -4,6 +4,7 @@ const showProcessor = require('./modules/showProcessor');
 const blacklistHandler = require('./modules/blacklistHandler');
 const notification = require('./modules/notification');
 const updateModule = require('./modules/updateModule');
+const logger = require('./modules/logger'); // Logger-Modul importieren
 
 // Hauptfunktion des Programms
 async function main() {
@@ -29,7 +30,7 @@ async function main() {
         // Lade die Blacklist
         const blacklist = await blacklistHandler.loadBlacklist('./config/blacklist.json');
 
-        // Beispielhafte API-Anfrage für Show-Daten
+        // API-Anfrage für Show-Daten
         const showData = await apiHelper.fetchShowData(config.apiUrl);
 
         // Verarbeite die Shows, die nicht auf der Blacklist stehen
@@ -39,13 +40,13 @@ async function main() {
                     showProcessor.processShows([show], config);
                     notification.sendNotification(show);
                 } else {
-                    console.log(`Die Show ${show.name} von ${show.dj} steht auf der Blacklist und wird übersprungen.`);
+                    logger.info(`Die Show ${show.n} von ${show.m} steht auf der Blacklist und wird übersprungen.`);
                 }
             });
         }
 
     } catch (error) {
-        console.error('Fehler im Hauptprozess:', error);
+        logger.error(`Fehler im Hauptprozess: ${error.message}`); // Fehlerprotokollierung
     }
 }
 

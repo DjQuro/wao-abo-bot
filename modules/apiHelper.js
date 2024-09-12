@@ -1,5 +1,5 @@
-
 const fetch = require('node-fetch');
+const logger = require('./logger'); // Füge das Logger-Modul hinzu
 
 // Funktion zum Abrufen von Show-Daten von einer API
 async function fetchShowData(apiUrl) {
@@ -10,7 +10,7 @@ async function fetchShowData(apiUrl) {
         }
         return await response.json();
     } catch (error) {
-        console.error('Fehler bei der API-Anfrage:', error);
+        logger.error(`API-Fehler: ${error.message}`); // Fehlerprotokollierung
         return null;
     }
 }
