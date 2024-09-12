@@ -24,3 +24,6 @@ Thumbs.db
 
 # Log-Dateien ignorieren
 *.log
+
+# Cache ignorieren
+cache/*.json

@@ -1,6 +1,5 @@
 
 {
-    "apiUrl": "https://api.weareone.fm/v1/showplan/6/1",
     "minInfoTime": 60,
     "subscriptions": ["Futuristic Polar Bears", "Menius"]
 }

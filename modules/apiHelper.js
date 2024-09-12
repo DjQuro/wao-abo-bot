@@ -1,18 +1,27 @@
-const fetch = require('node-fetch');
-const logger = require('./logger'); // Füge das Logger-Modul hinzu
+async function fetchShowsForStations(stationIds, config) {
+    const cache = await cacheHelper.loadCache();
+    const now = Date.now();
 
-// Funktion zum Abrufen von Show-Daten von einer API
-async function fetchShowData(apiUrl) {
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`Fehler beim Abrufen der API-Daten: ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        logger.error(`API-Fehler: ${error.message}`); // Fehlerprotokollierung
-        return null;
+    // Überprüfe, ob wir bereits gecachte Daten haben
+    if (cache && cache.timestamp && cacheHelper.isCacheValid(cache.timestamp, CACHE_DURATION) && cacheHelper.areShowDataValid(cache.data)) {
+        logger.info('Verwende gecachte Show-Daten');
+        return cache.data; // Verwende die gecachten Daten
     }
-}
 
-module.exports = { fetchShowData };
+    // Falls keine gültigen Daten im Cache vorhanden sind, API-Anfragen senden
+    const apiPromises = stationIds.map(stationId => {
+        const apiUrl = `https://api.weareone.fm/v1/showplan/${stationId}/1`;
+        return fetchShowData(apiUrl);
+    });
+
+    const allShowData = await Promise.all(apiPromises);
+    const flatShowData = allShowData.flat();
+
+    // Speichere die Show-Daten im Cache
+    await cacheHelper.saveCache({
+        timestamp: now,
+        data: flatShowData
+    });
+
+    return flatShowData;
+}
