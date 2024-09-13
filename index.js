@@ -1,17 +1,27 @@
 const logger = require('./modules/logger');
-logger.info(`Loading /modules/logger`);
+console.log(`Loading /modules/logger`);
 const configLoader = require('./modules/configLoader');
-logger.info(`Loading /modules/configLoader`);
+console.log(`Loading /modules/configLoader`);
 const apiHelper = require('./modules/apiHelper');
-logger.info(`Loading /modules/apiHelper`);
+console.log(`Loading /modules/apiHelper`);
 const showProcessor = require('./modules/showProcessor');
-logger.info(`Loading /modules/showProcessor`);
+console.log(`Loading /modules/showProcessor`);
 const blacklistHandler = require('./modules/blacklistHandler');
-logger.info(`Loading /modules/blacklistHandler`);
+console.log(`Loading /modules/blacklistHandler`);
 const telegram = require('./modules/telegram'); // Telegram-Modul importieren
-logger.info(`Loading /modules/telegram`);
+console.log(`Loading /modules/telegram`);
 
-logger.info(`Bot gestartet`);
+async function init() {
+try {
+        const config = await configLoader.loadConfig('./config/config.json');
+        console.log("Telegram-Token: ", config.telegramToken);
+        console.log("Chat-ID: ", config.telegramChatId);
+	console.log(`Bot started!`);
+    } catch (error) {
+        logger.error(`Initialisierung fehlgeschlagen: ${error.message}`);
+    }
+}
+
 async function main() {
     try {
         const config = await configLoader.loadConfig('./config/config.json');
@@ -32,4 +42,5 @@ async function main() {
 setInterval(main, 60 * 1000); // alle 60 Sekunden
 
 // Starte den Bot sofort
+init();
 main();

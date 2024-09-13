@@ -2,38 +2,53 @@ const moment = require('moment');
 const logger = require('./logger');
 const notification = require('./notification');
 const cacheHelper = require('./cacheHelper');
+const telegram = require('./telegram');
 
-async function processShowsInParallel(showData, config) {
+async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
     const processedShows = cache.processedShows || [];
     const cancelledShows = cache.cancelledShows || [];
+    const extendedShows = cache.extendedShows || [];
 
-    const allShowsFromApi = [];
+    const now = moment();
 
     const processPromises = showData.map(({ stationId, shows }) => {
         return new Promise((resolve, reject) => {
             try {
                 shows.forEach(show => {
-                    allShowsFromApi.push({ id: show.mi, start: show.s, stationId });  // Erfasse alle Shows
-
                     const showStartTime = moment(show.s);
-                    const now = moment();
+                    const showEndTime = moment(show.e);
 
-                    const existingShow = processedShows.find(ps => ps.id === show.mi && ps.start === show.s && ps.stationId === stationId);
-
-                    // Ankündigung 15 Minuten vorher
-                    const timeUntilStart = showStartTime.diff(now, 'minutes');
-                    if (timeUntilStart <= 15 && !existingShow) {
-                        logger.info(`Ankündigung für Show: ${show.n} von ${show.m} auf ${stationId}`);
-                        notification.sendNotification(show, stationId, config);  // Ankündigung der Show
-                        processedShows.push({ id: show.mi, start: show.s, end: show.e, stationId, showName: show.n, djName: show.m });
+                    // Nur kommende Shows melden
+                    if (now.isAfter(showStartTime)) {
+                        logger.info(`Die Show ${show.n} startet um ${showStartTime.format('HH:mm')} und wird nicht gemeldet, da sie bereits begonnen hat oder vergangen ist.`);
+                        return; // Überspringe laufende oder vergangene Shows
                     }
 
-                    // Verlängerung erkennen
-                    if (existingShow && existingShow.end < show.e) {
-                        notification.sendExtension(existingShow.showName, existingShow.djName, stationId, show.e, config);
-                        existingShow.end = show.e;  // Aktualisiere die Endzeit
+                    // Nur Shows, die nicht verarbeitet wurden und noch kommen
+                    if (!processedShows.some(ps => ps.id === show.mi && ps.start === show.s)) {
+                        logger.info(`Ankündigung für Show: ${show.n}`);
+                        notification.sendNotification(show, stationId, config); // Stelle sicher, dass config übergeben wird
+                        processedShows.push({ id: show.mi, start: show.s, end: show.e });
                     }
+
+                    // Verlängerungen und Absagen ebenfalls nur für kommende Shows
+                    if (now.isBefore(showStartTime)) {
+                        // Verlängerung überprüfen
+                        const cachedShow = processedShows.find(ps => ps.id === show.mi);
+                        if (cachedShow && show.e !== cachedShow.end) {
+                            logger.info(`Verlängerung der Show ${show.n} erkannt.`);
+                            notification.sendExtension(show.n, show.m, stationId, show.e, config); // Korrekte Parameter übergeben
+                            extendedShows.push({ id: show.mi, end: show.e });
+                        }
+
+                        // Absage überprüfen
+                        if (cancelledShows.includes(show.mi)) {
+                            logger.info(`Absage der Show ${show.n} erkannt.`);
+                            notification.sendCancellation(show.n, show.m, stationId, config); // Korrekte Parameter übergeben
+                        }
+                    }
+
                 });
 
                 resolve();
@@ -45,17 +60,12 @@ async function processShowsInParallel(showData, config) {
 
     await Promise.all(processPromises);
 
-    // Absagen erkennen
-    const cancelled = processedShows.filter(ps => !allShowsFromApi.some(apiShow => apiShow.id === ps.id && apiShow.start === ps.start && apiShow.stationId === ps.stationId));
-    cancelled.forEach(cancelledShow => {
-        notification.sendCancellation(cancelledShow.showName, cancelledShow.djName, cancelledShow.stationId, config);
-        cancelledShows.push(cancelledShow);
-    });
-
+    // Cache speichern
     await cacheHelper.saveCache({
         ...cache,
         processedShows,
-        cancelledShows
+        cancelledShows,
+        extendedShows
     });
 }
 

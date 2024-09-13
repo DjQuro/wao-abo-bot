@@ -25,7 +25,6 @@ Thumbs.db
 # Log-Dateien ignorieren
 *.log
 
-# Cache und Config ignorieren
+# Cache ignorieren
 cache/*.json
-config/blacklist.json
 config/config.json

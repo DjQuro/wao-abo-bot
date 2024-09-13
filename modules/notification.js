@@ -22,6 +22,13 @@ function sendNotification(show, stationId, config) {
         const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
         const startUnix = show.s;
         const endUnix = show.e;
+
+        // Debugging: Überprüfen, ob die Endzeit existiert
+        if (!endUnix) {
+            logger.error(`Endzeit für Show ${showName} von ${djName} auf ${stationName} fehlt!`);
+            return;
+        }
+
         const startTime = DateTime.fromMillis(startUnix).toFormat('HH:mm');
         const endTime = DateTime.fromMillis(endUnix).toFormat('HH:mm');
         const dateLabel = show.dateLabel || 'heute';
@@ -53,6 +60,12 @@ function sendCancellation(showName, djName, stationId, config) {
 // Benachrichtigungsfunktion für Verlängerung
 function sendExtension(showName, djName, stationId, endTime, config) {
     try {
+        // Überprüfe, ob die Endzeit vorhanden ist
+        if (!endTime) {
+            logger.error(`Endzeit für die Verlängerung der Show ${showName} von ${djName} fehlt!`);
+            return;
+        }
+
         const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
         const formattedEndTime = DateTime.fromMillis(endTime).toFormat('HH:mm');
         const notificationMessage = `⏱️ Die Sendung ${showName} von ${djName} auf ${stationName} wurde bis ${formattedEndTime} verlängert!`;
@@ -66,5 +79,3 @@ function sendExtension(showName, djName, stationId, endTime, config) {
 }
 
 module.exports = { sendNotification, sendCancellation, sendExtension };
-
-
