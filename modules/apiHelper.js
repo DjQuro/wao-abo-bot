@@ -7,9 +7,6 @@ async function fetchShowData(stationId, apiUrl) {
         const todayUrl = `${apiUrl}/showplan/${stationId}/1`; // Abruf für heute
         const tomorrowUrl = `${apiUrl}/showplan/${stationId}/2`; // Abruf für morgen
 
-        // Logge die URLs zur Verifizierung
-        logger.info(`Abrufen von Daten von: ${todayUrl} und ${tomorrowUrl}`);
-
         // Daten für heute abrufen
         const responseToday = await fetch(todayUrl);
         const todayData = await responseToday.json();

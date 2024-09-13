@@ -9,7 +9,6 @@ const cacheFilePath = path.join(__dirname, '../cache/cache.json');
 async function loadCache() {
     try {
         const data = await fs.readFile(cacheFilePath, 'utf8');
-        logger.info('Cache erfolgreich geladen.');
         return JSON.parse(data);
     } catch (error) {
         if (error.code === 'ENOENT') {
@@ -25,9 +24,7 @@ async function loadCache() {
 // Funktion zum Speichern des Caches
 async function saveCache(cacheData) {
     try {
-        logger.info('Speichere Cache-Daten...');
         await fs.writeFile(cacheFilePath, JSON.stringify(cacheData, null, 2));
-        logger.info('Cache erfolgreich gespeichert.');
     } catch (error) {
         logger.error('Fehler beim Speichern des Caches:', error);
     }
