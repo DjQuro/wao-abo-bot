@@ -1,11 +1,11 @@
-#DO NOT USE! NOT FOR PRODUCTION USE! JUST COMPLETE REWORK!
+# DO NOT USE! NOT FOR PRODUCTION USE! JUST COMPLETE REWORK!
 
-#NICHT FÜR DEN PRODUKTIVEN EINSATZ BESTIMMT! 
+# NICHT FÜR DEN PRODUKTIVEN EINSATZ BESTIMMT! 
 
 Contribution allowed!
 Beteiligung erlaubt!
 
-#To Do vor Release von 2.0
+# To Do vor Release von 2.0
 - Cacheprobleme lösen
 - Commandsystem neu Schreiben
 - DJ Fetcher Routine neu machen
