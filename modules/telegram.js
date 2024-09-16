@@ -45,6 +45,8 @@ function isAdmin(chatId, config) {
 async function handleTelegramMessage(chatId, message, config) {
     const [command, ...args] = message.split(' ');
 
+    console.log(`Empfange Befehl: ${command} von ChatID: ${chatId}`);
+
     switch (command) {
         case '/subscribe':
             if (args.length > 0) {

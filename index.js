@@ -1,22 +1,20 @@
+const fetch = require('node-fetch');
 const logger = require('./modules/logger');
-console.log(`Loading /modules/logger`);
 const configLoader = require('./modules/configLoader');
-console.log(`Loading /modules/configLoader`);
-const apiHelper = require('./modules/apiHelper');
-console.log(`Loading /modules/apiHelper`);
+const telegram = require('./modules/telegram');
 const showProcessor = require('./modules/showProcessor');
-console.log(`Loading /modules/showProcessor`);
 const blacklistHandler = require('./modules/blacklistHandler');
-console.log(`Loading /modules/blacklistHandler`);
-const telegram = require('./modules/telegram'); // Telegram-Modul importieren
-console.log(`Loading /modules/telegram`);
-
+const apiHelper = require('./modules/apiHelper');
+let lastUpdateId = 0;
 async function init() {
-try {
+    try {
         const config = await configLoader.loadConfig('./config/config.json');
         console.log("Telegram-Token: ", config.telegramToken);
         console.log("Chat-ID: ", config.telegramChatId);
-	console.log(`Bot started!`);
+        console.log(`Bot started!`);
+
+        // Starte den Befehlshandler
+        setInterval(() => processTelegramUpdates(config), 5000); // Alle 5 Sekunden nach neuen Nachrichten schauen
     } catch (error) {
         logger.error(`Initialisierung fehlgeschlagen: ${error.message}`);
     }
@@ -35,6 +33,33 @@ async function main() {
         await showProcessor.processShowsInParallel(showData, config, blacklist);
     } catch (error) {
         logger.error(`Fehler im Hauptprozess: ${error.message}`);
+    }
+}
+
+// Telegram-Nachrichten abholen und verarbeiten
+async function processTelegramUpdates(config) {
+    try {
+        const url = `https://api.telegram.org/bot${config.telegramToken}/getUpdates?offset=${lastUpdateId + 1}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.ok) {
+            const messages = data.result;
+
+            // Verarbeite jede Nachricht
+            messages.forEach(message => {
+                const chatId = message.message.chat.id;
+                const text = message.message.text;
+
+                // Verarbeite den Befehl
+                telegram.handleTelegramMessage(chatId, text, config);
+
+                // Aktualisiere den Offset auf die letzte Update-ID
+                lastUpdateId = message.update_id;
+            });
+        }
+    } catch (error) {
+        logger.error(`Fehler beim Verarbeiten der Telegram-Nachrichten: ${error.message}`);
     }
 }
 

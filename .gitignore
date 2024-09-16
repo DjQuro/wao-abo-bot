@@ -26,5 +26,7 @@ Thumbs.db
 *.log
 
 # Cache ignorieren
-cache/*.json
+data/*.json
+
+# Config nicht überschreiben
 config/config.json

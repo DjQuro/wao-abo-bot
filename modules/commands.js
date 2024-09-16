@@ -3,26 +3,37 @@ const path = require('path');
 
 // DJ-Abonnement-Management
 async function subscribeDJ(chatId, djName) {
+    console.log(`subscribeDJ aufgerufen für ChatID: ${chatId} und DJ: ${djName}`);
     const subs = await loadSubsJson();
+    console.log(`subs.json geladen: ${JSON.stringify(subs)}`);
+
     const chatSubs = subs.chats[chatId] || { djs: [], notificationTime: 15 };
     if (chatSubs.djs.includes(djName)) {
         return `Der DJ ${djName} ist bereits abonniert.`;
     }
+
     chatSubs.djs.push(djName);
     subs.chats[chatId] = chatSubs;
-    await saveJsonFile(path.join(__dirname, 'subs.json'), subs);
+    await saveJsonFile(path.join(__dirname, '../config/subs.json'), subs);
+    console.log(`subs.json gespeichert: ${JSON.stringify(subs)}`);
     return `Der DJ ${djName} wurde erfolgreich abonniert!`;
 }
 
+// Befehl /unsubscribe für das Entfernen eines DJ-Abos
 async function unsubscribeDJ(chatId, djName) {
+    console.log(`unsubscribeDJ aufgerufen für ChatID: ${chatId} und DJ: ${djName}`);
     const subs = await loadSubsJson();
+    console.log(`subs.json geladen: ${JSON.stringify(subs)}`);
+
     const chatSubs = subs.chats[chatId] || { djs: [], notificationTime: 15 };
     if (!chatSubs.djs.includes(djName)) {
         return `Der DJ ${djName} ist nicht abonniert.`;
     }
+
     chatSubs.djs = chatSubs.djs.filter(dj => dj !== djName);
     subs.chats[chatId] = chatSubs;
-    await saveJsonFile(path.join(__dirname, 'subs.json'), subs);
+    await saveJsonFile(path.join(__dirname, '../config/subs.json'), subs);
+    console.log(`subs.json gespeichert: ${JSON.stringify(subs)}`);
     return `Der DJ ${djName} wurde erfolgreich abbestellt.`;
 }
 
