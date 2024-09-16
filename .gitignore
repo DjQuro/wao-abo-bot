@@ -30,3 +30,6 @@ data/*.json
 
 # Config nicht überschreiben
 config/config.json
+
+# Ignoriere Dev-Tools
+helper-scripts/wao-api-test/*
