@@ -33,3 +33,7 @@ config/config.json
 
 # Ignoriere Dev-Tools
 helper-scripts/wao-api-test/*
+
+# Ignoriere alte Botdaten
+botold/data/*
+botold/*.json
