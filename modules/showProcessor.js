@@ -22,13 +22,13 @@ async function processShowsInParallel(showData, config, blacklist) {
 
                     // Nur kommende Shows melden, die in den nächsten 15 Minuten starten
                     if (timeUntilStart > 15) {
-                        logger.info(`Die Show ${show.n} startet um ${showStartTime.format('HH:mm')} und wird nicht gemeldet, da sie mehr als 15 Minuten entfernt ist.`);
+                        // logger.info(`Die Show ${show.n} startet um ${showStartTime.format('HH:mm')} und wird nicht gemeldet, da sie mehr als 15 Minuten entfernt ist.`);
                         return; // Überspringe Shows, die mehr als 15 Minuten entfernt sind
                     } else if (now.isAfter(showStartTime) && now.isBefore(showEndTime)) {
-                        logger.info(`Die Show ${show.n} läuft und wird nicht erneut angekündigt.`);
+                        // logger.info(`Die Show ${show.n} läuft und wird nicht erneut angekündigt.`);
                         return; // Überspringe laufende Shows
                     } else if (now.isAfter(showEndTime)) {
-                        logger.info(`Die Show ${show.n} ist bereits beendet.`);
+                        // logger.info(`Die Show ${show.n} ist bereits beendet.`);
                         return; // Überspringe beendete Shows
                     }
 
