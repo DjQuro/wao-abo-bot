@@ -8,7 +8,7 @@ async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
     const processedShows = cache.processedShows || [];
     const cancelledShows = cache.cancelledShows || [];
-    const extendedShows = cache.extendedShows || [];
+    const extendedShows = cache.extendedShows || []; // Liste der bereits gemeldeten Verlängerungen
 
     const now = moment();
 
@@ -39,12 +39,12 @@ async function processShowsInParallel(showData, config, blacklist) {
                         processedShows.push({ id: show.mi, start: show.s, end: show.e });
                     }
 
-                    // Verlängerungen überprüfen, nur wenn die Show noch läuft
+                    // Verlängerungen überprüfen, nur wenn die Show noch läuft und nicht bereits gemeldet wurde
                     const cachedShow = processedShows.find(ps => ps.id === show.mi);
-                    if (cachedShow && now.isBefore(showEndTime) && show.e !== cachedShow.end) {
+                    if (cachedShow && now.isBefore(showEndTime) && show.e !== cachedShow.end && !extendedShows.includes(show.mi)) {
                         logger.info(`Verlängerung der Show ${show.n} erkannt.`);
                         notification.sendExtension(show.n, show.m, stationId, show.e, config);
-                        extendedShows.push({ id: show.mi, end: show.e });
+                        extendedShows.push(show.mi); // Verlängerung als gemeldet markieren
                     }
 
                     // Absage der Show überprüfen
@@ -68,9 +68,8 @@ async function processShowsInParallel(showData, config, blacklist) {
         ...cache,
         processedShows,
         cancelledShows,
-        extendedShows
+        extendedShows // Speichern der gemeldeten Verlängerungen
     });
 }
-
 
 module.exports = { processShowsInParallel };
