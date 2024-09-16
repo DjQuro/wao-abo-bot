@@ -3,8 +3,8 @@ const path = require('path');
 const logger = require('../modules/logger'); // Pfad zu deinem logger
 
 // Pfade zu den alten Daten
-const oldDataPath = path.join(__dirname, '../botold');
-const djsOldPath = path.join(oldDataPath, 'djs.json'); // Alte DJ-Datenbank
+const oldDataPath = path.join(__dirname, '../botold/data');
+const djsOldPath = path.join(oldDataPath, '../djs.json'); // Alte DJ-Datenbank
 
 // Neue Pfade
 const newDataPath = path.join(__dirname, '../data');
@@ -48,14 +48,31 @@ async function saveNewData(filePath, data) {
     }
 }
 
-// Migration der Abonnements und Sender
+// Indexiere den botold/data Ordner, um die Chat-IDs zu finden
+async function indexBotOldFolder() {
+    try {
+        const chatDirs = await fs.readdir(oldDataPath, { withFileTypes: true });
+        const chatIds = chatDirs
+            .filter(dirent => dirent.isDirectory()) // Nur Ordner (Chat-IDs)
+            .map(dirent => dirent.name); // Namen der Ordner (Chat-IDs)
+
+        return chatIds;
+    } catch (error) {
+        logger.error(`Fehler beim Indexieren des Ordners ${oldDataPath}: ${error.message}`);
+        return [];
+    }
+}
+
+// Migration der Abonnements, Sender und Benachrichtigungszeit
 async function migrateSubscriptionsAndStations(chatId) {
-    // Alte Abonnements und Sender laden
+    // Pfade zu den alten Abonnements, Senderdaten und Konfigurationsdaten
     const oldSubsPath = path.join(oldDataPath, `${chatId}/subs.json`);
     const oldStationsPath = path.join(oldDataPath, `${chatId}/stations.json`);
+    const oldConfigPath = path.join(oldDataPath, `${chatId}/config.json`);
 
     const oldSubs = await loadOldData(oldSubsPath);
     const oldStations = await loadOldData(oldStationsPath);
+    const oldConfig = await loadOldData(oldConfigPath);
 
     // Neue Abonnements laden
     const newSubs = await loadOldData(subsPath) || defaultSubsStructure;
@@ -65,6 +82,12 @@ async function migrateSubscriptionsAndStations(chatId) {
     if (oldSubs && oldSubs.subscriptions) {
         const chatSubs = newSubs.chats[chatId] || { djs: [], notificationTime: 15 };
         chatSubs.djs = oldSubs.subscriptions; // Übernehmen der alten Abonnements
+
+        // Migriere Benachrichtigungszeit aus config.json (minInfo)
+        if (oldConfig && oldConfig.minInfo) {
+            chatSubs.notificationTime = oldConfig.minInfo;
+        }
+
         newSubs.chats[chatId] = chatSubs;
     }
 
@@ -96,10 +119,10 @@ async function migrateDjs() {
 async function migrateAll() {
     await ensureDataDir();  // Stelle sicher, dass das Datenverzeichnis existiert
 
-    // Beispiel-Chat-IDs, die migriert werden sollen
-    const chatIds = ['318491860', '123456789']; // Diese IDs müssen aus deinen alten Daten kommen
+    // Chat-IDs aus dem botold/data-Ordner indexieren
+    const chatIds = await indexBotOldFolder();
 
-    // Migriere Abonnements und Sender für jeden Chat
+    // Migriere Abonnements, Sender und Benachrichtigungszeit für jeden Chat
     for (const chatId of chatIds) {
         await migrateSubscriptionsAndStations(chatId);
     }
