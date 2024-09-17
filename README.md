@@ -6,7 +6,6 @@ Contribution allowed!
 Beteiligung erlaubt!
 
 # To Do vor Release von 2.0
-- Cacheprobleme lösen
 - Commandsystem neu Schreiben
 - DJ Fetcher Routine neu machen
 - Ankündigungen nach Abosystem
