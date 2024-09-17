@@ -8,7 +8,7 @@ async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
     const processedShows = cache.processedShows || [];
     const cancelledShows = cache.cancelledShows || [];
-    const extendedShows = cache.extendedShows || []; // Liste der bereits gemeldeten Verlängerungen
+    const extendedShows = cache.extendedShows || [];
 
     const now = moment();
 
@@ -20,15 +20,15 @@ async function processShowsInParallel(showData, config, blacklist) {
                     const showEndTime = moment(show.e);
                     const timeUntilStart = showStartTime.diff(now, 'minutes');
 
-                    // Nur kommende Shows melden, die in den nächsten 15 Minuten starten
+                    // Nur kommende Shows melden
                     if (timeUntilStart > 15) {
-                        // logger.info(`Die Show ${show.n} startet um ${showStartTime.format('HH:mm')} und wird nicht gemeldet, da sie mehr als 15 Minuten entfernt ist.`);
+                        //logger.info(`Die Show ${show.n} startet um ${showStartTime.format('HH:mm')} und wird nicht gemeldet, da sie mehr als 15 Minuten entfernt ist.`);
                         return; // Überspringe Shows, die mehr als 15 Minuten entfernt sind
                     } else if (now.isAfter(showStartTime) && now.isBefore(showEndTime)) {
-                        // logger.info(`Die Show ${show.n} läuft und wird nicht erneut angekündigt.`);
+                        //logger.info(`Die Show ${show.n} läuft und wird nicht erneut angekündigt.`);
                         return; // Überspringe laufende Shows
                     } else if (now.isAfter(showEndTime)) {
-                        // logger.info(`Die Show ${show.n} ist bereits beendet.`);
+                        //logger.info(`Die Show ${show.n} ist bereits beendet.`);
                         return; // Überspringe beendete Shows
                     }
 
@@ -39,12 +39,20 @@ async function processShowsInParallel(showData, config, blacklist) {
                         processedShows.push({ id: show.mi, start: show.s, end: show.e });
                     }
 
-                    // Verlängerungen überprüfen, nur wenn die Show noch läuft und nicht bereits gemeldet wurde
+                    // Verlängerungen überprüfen
                     const cachedShow = processedShows.find(ps => ps.id === show.mi);
-                    if (cachedShow && now.isBefore(showEndTime) && show.e !== cachedShow.end && !extendedShows.includes(show.mi)) {
+                    if (cachedShow && show.e !== cachedShow.end) {
                         logger.info(`Verlängerung der Show ${show.n} erkannt.`);
                         notification.sendExtension(show.n, show.m, stationId, show.e, config);
-                        extendedShows.push(show.mi); // Verlängerung als gemeldet markieren
+                        extendedShows.push({ id: show.mi, end: show.e });
+                    }
+
+                    // Überprüfe, ob der Benutzer der Administrator ist, bevor die Blacklist verwaltet wird
+                    if (telegram.isAdmin(show.chatId, config)) {
+                        logger.info(`Administrator führt die Aktion aus.`);
+                        // Blacklist-Änderungen nur durch den Administrator
+                    } else {
+                        logger.error(`Der Benutzer mit der ChatID ${show.chatId} ist nicht berechtigt, die Blacklist zu ändern.`);
                     }
 
                     // Absage der Show überprüfen
@@ -68,7 +76,7 @@ async function processShowsInParallel(showData, config, blacklist) {
         ...cache,
         processedShows,
         cancelledShows,
-        extendedShows // Speichern der gemeldeten Verlängerungen
+        extendedShows
     });
 }
 
