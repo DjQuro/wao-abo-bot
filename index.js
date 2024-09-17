@@ -6,7 +6,7 @@ const showProcessor = require('./modules/showProcessor');
 const blacklistHandler = require('./modules/blacklistHandler');
 const apiHelper = require('./modules/apiHelper');
 let lastUpdateId = 0;
-const { loadSubsJson } = require('./cacheHelper');
+const { loadSubsJson } = require('./modules/cacheHelper');
 
 async function init() {
     try {
