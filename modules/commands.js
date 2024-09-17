@@ -64,4 +64,24 @@ async function setNotificationTime(chatId, minutes) {
     return `Die Benachrichtigungszeit wurde auf ${minutes} Minuten festgelegt.`;
 }
 
-module.exports = { subscribeDJ, unsubscribeDJ, toggleStation, setNotificationTime };
+// Befehl /listdjs zum Ausgeben aller abonnierten DJs im aktuellen Chat
+async function listSubscribedDJs(chatId) {
+    const subs = await loadSubsJson(); // subs.json laden
+    const chatSubs = subs.chats[chatId] || { djs: [] };
+
+    if (chatSubs.djs.length === 0) {
+        return `Keine DJs im Chat abonniert.`;
+    }
+
+    // DJs alphabetisch sortieren
+    const sortedDjs = chatSubs.djs.sort();
+
+    // Anzahl der abonnierten DJs
+    const count = sortedDjs.length;
+
+    // Ausgabe der Liste der abonnierten DJs
+    return `Es sind ${count} DJs abonniert:\n` + sortedDjs.join('\n');
+}
+
+
+module.exports = { subscribeDJ, unsubscribeDJ, toggleStation, setNotificationTime, listSubscribedDJs };

@@ -82,6 +82,12 @@ async function handleTelegramMessage(chatId, message, config) {
             }
             break;
 
+        case '/listdjs':
+        case '/subs':
+            const response = await commands.listSubscribedDJs(chatId);
+            sendTelegramMessage(response, config);
+            break;
+
         case '/time':
             if (args.length > 0) {
                 const minutes = parseInt(args[0], 10);
