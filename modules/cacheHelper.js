@@ -99,7 +99,7 @@ async function saveCache(cacheData) {
     const cacheFilePath = path.join(dataDir, 'cache.json');
     try {
         await fs.writeFile(cacheFilePath, JSON.stringify(cacheData, null, 2));
-        logger.info(`Cache erfolgreich gespeichert: ${cacheFilePath}`);
+        //logger.info(`Cache erfolgreich gespeichert: ${cacheFilePath}`);
     } catch (error) {
         logger.error('Fehler beim Speichern des Caches:', error);
     }

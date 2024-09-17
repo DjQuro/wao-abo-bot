@@ -6,12 +6,31 @@ const showProcessor = require('./modules/showProcessor');
 const blacklistHandler = require('./modules/blacklistHandler');
 const apiHelper = require('./modules/apiHelper');
 let lastUpdateId = 0;
+const { loadSubsJson } = require('./cacheHelper');
+
 async function init() {
     try {
         const config = await configLoader.loadConfig('./config/config.json');
         console.log("Telegram-Token: ", config.telegramToken);
         console.log("Chat-ID: ", config.telegramChatId);
-        console.log(`Bot started!`);
+
+        // Lade die Abonnements
+        const subs = await loadSubsJson();
+
+        // Anzahl der hinterlegten Chats
+        const chatCount = Object.keys(subs.chats).length;
+
+        // Berechnung der Gesamtanzahl der abonnierten DJs
+        let totalDJs = 0;
+        Object.values(subs.chats).forEach(chat => {
+            totalDJs += chat.djs.length;
+        });
+
+        // Logge die Anzahl der Chats und DJs
+        console.log(`Anzahl der hinterlegten Chats: ${chatCount}`);
+        console.log(`Gesamtanzahl der abonnierten DJs: ${totalDJs}`);
+
+        console.log(`Bot gestartet!`);
 
         // Starte den Befehlshandler
         setInterval(() => processTelegramUpdates(config), 5000); // Alle 5 Sekunden nach neuen Nachrichten schauen
@@ -19,6 +38,7 @@ async function init() {
         logger.error(`Initialisierung fehlgeschlagen: ${error.message}`);
     }
 }
+
 
 async function main() {
     try {
