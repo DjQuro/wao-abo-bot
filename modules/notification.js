@@ -33,11 +33,17 @@ function sendNotification(show, stationId, config) {
         const endTime = DateTime.fromMillis(endUnix).toFormat('HH:mm');
         const dateLabel = show.dateLabel || 'heute';
 
-        const notificationMessage = `📣 Die Show ${showName} von ${djName} auf ${stationName} startet ${dateLabel} um ${startTime} Uhr und geht bis ${endTime} Uhr!`;
-
-        // Sende die Nachricht an den Telegram-Bot
-        telegram.sendTelegramMessage(notificationMessage, config);
-        logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
+        // Easter Egg: Special message for Quro and Housealarm
+        if (djName === 'Quro' && showName.includes('Housealarm')) {
+            const easterEggMessage = `🚨 Der Housealarm wird heute um ${startTime} auf ${stationName} durch ${djName} ausgelöst!`;
+            telegram.sendTelegramMessage(easterEggMessage, config);
+            logger.info(`EasterEgg Benachrichtigung gesendet: ${easterEggMessage}`);
+        } else {
+            const notificationMessage = `📣 Die Show ${showName} von ${djName} auf ${stationName} startet ${dateLabel} um ${startTime} Uhr und geht bis ${endTime} Uhr!`;
+            // Sende die Nachricht an den Telegram-Bot
+            telegram.sendTelegramMessage(notificationMessage, config);
+            logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
+        }
     } catch (error) {
         logger.error(`Fehler beim Senden der Show-Ankündigung: ${error.message}`);
     }
