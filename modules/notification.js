@@ -15,20 +15,13 @@ const stations = {
 };
 
 // Benachrichtigungsfunktion für Show-Ankündigung
-function sendNotification(show, stationId, config) {
+function sendNotification(show, stationId, config, chatId) {
     try {
         const showName = show.n || 'Unbekannte Show';
         const djName = show.m || 'Unbekannter DJ';
         const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
         const startUnix = show.s;
         const endUnix = show.e;
-
-        // Debugging: Überprüfen, ob die Endzeit existiert
-        if (!endUnix) {
-            logger.error(`Endzeit für Show ${showName} von ${djName} auf ${stationName} fehlt!`);
-            return;
-        }
-
         const startTime = DateTime.fromMillis(startUnix).toFormat('HH:mm');
         const endTime = DateTime.fromMillis(endUnix).toFormat('HH:mm');
         const dateLabel = show.dateLabel || 'heute';
@@ -36,7 +29,7 @@ function sendNotification(show, stationId, config) {
         const notificationMessage = `📣 Die Show ${showName} von ${djName} auf ${stationName} startet ${dateLabel} um ${startTime} Uhr und geht bis ${endTime} Uhr!`;
 
         // Sende die Nachricht an den Telegram-Bot
-        telegram.sendTelegramMessage(notificationMessage, config);
+        telegram.sendTelegramMessage(notificationMessage, config, chatId);
         logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
     } catch (error) {
         logger.error(`Fehler beim Senden der Show-Ankündigung: ${error.message}`);
@@ -44,13 +37,15 @@ function sendNotification(show, stationId, config) {
 }
 
 // Benachrichtigungsfunktion für Absage
-function sendCancellation(showName, djName, stationId, config) {
+function sendCancellation(show, stationId, config, chatId) {
     try {
+        const showName = show.n || 'Unbekannte Show';
+        const djName = show.m || 'Unbekannter DJ';
         const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
         const notificationMessage = `🚫 Die Sendung ${showName} von ${djName} auf ${stationName} wurde abgesagt!`;
 
         // Sende die Nachricht an den Telegram-Bot
-        telegram.sendTelegramMessage(notificationMessage, config);
+        telegram.sendTelegramMessage(notificationMessage, config, chatId);
         logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
     } catch (error) {
         logger.error(`Fehler beim Senden der Absage-Benachrichtigung: ${error.message}`);
@@ -58,24 +53,31 @@ function sendCancellation(showName, djName, stationId, config) {
 }
 
 // Benachrichtigungsfunktion für Verlängerung
-function sendExtension(showName, djName, stationId, endTime, config) {
+function sendExtension(show, stationId, config, chatId) {
     try {
-        // Überprüfe, ob die Endzeit vorhanden ist
-        if (!endTime) {
-            logger.error(`Endzeit für die Verlängerung der Show ${showName} von ${djName} fehlt!`);
-            return;
-        }
-
+        const showName = show.n || 'Unbekannte Show';
+        const djName = show.m || 'Unbekannter DJ';
         const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
-        const formattedEndTime = DateTime.fromMillis(endTime).toFormat('HH:mm');
+        const endUnix = show.e;
+        const formattedEndTime = DateTime.fromMillis(endUnix).toFormat('HH:mm');
         const notificationMessage = `⏱️ Die Sendung ${showName} von ${djName} auf ${stationName} wurde bis ${formattedEndTime} verlängert!`;
 
         // Sende die Nachricht an den Telegram-Bot
-        telegram.sendTelegramMessage(notificationMessage, config);
+        telegram.sendTelegramMessage(notificationMessage, config, chatId);
         logger.info(`Benachrichtigung gesendet: ${notificationMessage}`);
     } catch (error) {
         logger.error(`Fehler beim Senden der Verlängerungs-Benachrichtigung: ${error.message}`);
     }
 }
 
-module.exports = { sendNotification, sendCancellation, sendExtension };
+// Benachrichtigung für spezielles Easter-Egg
+function sendCustomMessage(message, chatId, config) {
+    try {
+        telegram.sendTelegramMessage(message, config, chatId);
+        logger.info(`Easter-Egg Nachricht gesendet: ${message}`);
+    } catch (error) {
+        logger.error(`Fehler beim Senden der Easter-Egg-Benachrichtigung: ${error.message}`);
+    }
+}
+
+module.exports = { sendNotification, sendCancellation, sendExtension, sendCustomMessage };

@@ -4,12 +4,22 @@ const notification = require('./notification');
 const cacheHelper = require('./cacheHelper');
 const telegram = require('./telegram');
 
+const stations = {
+    5: 'TechnoBase.FM',
+    6: 'HouseTime.FM',
+    7: 'HardBase.FM',
+    8: 'TranceBase.FM',
+    10: 'CoreTime.FM',
+    11: 'ClubTime.FM',
+    13: 'TeaTime.FM',
+    14: 'Replay.FM'
+};
+
 async function processShowsInParallel(showData, config, blacklist) {
     const cache = await cacheHelper.loadCache();
     const processedShows = cache.processedShows || [];
-    const cancelledShows = cache.cancelledShows || [];
     const extendedShows = cache.extendedShows || [];
-
+    const cancelledShows = cache.cancelledShows || [];
     const now = moment();
 
     const processPromises = showData.map(({ stationId, shows }) => {
@@ -18,39 +28,41 @@ async function processShowsInParallel(showData, config, blacklist) {
                 shows.forEach(show => {
                     const showStartTime = moment(show.s);
                     const showEndTime = moment(show.e);
+                    const stationName = stations[stationId] || `Sender mit ID ${stationId}`;
 
-                    // Prüfen, ob die Show heute stattfindet und in den nächsten 15 Minuten beginnt
-                    const isToday = showStartTime.isSame(now, 'day');
+                    // Nur heutige und baldige Shows verarbeiten
+                    if (showStartTime.isAfter(now.add(1, 'day'))) return;
+
+                    // 15 Minuten vor Start melden, inkl. Easter-Egg-Bedingung für Housealarm
                     const timeUntilStart = showStartTime.diff(now, 'minutes');
-                    if (!isToday || timeUntilStart > 15) {
-                        logger.info(`Die Show ${show.n} startet am ${showStartTime.format('YYYY-MM-DD HH:mm')} und wird derzeit nicht gemeldet.`);
-                        return; // Überspringe Shows, die nicht heute oder nicht bald starten
+                    if (timeUntilStart <= 15 && timeUntilStart > 0) {
+                        if (show.m === 'Quro' && show.n.includes('Housealarm') && !processedShows.some(ps => ps.id === show.mi && ps.type === 'easterEgg')) {
+                            const customMessage = `🚨 Der Housealarm wird heute um ${showStartTime.format('HH:mm')} auf ${stationName} durch ${show.m} ausgelöst!`;
+                            notification.sendCustomMessage(customMessage, null, config);
+                            processedShows.push({ id: show.mi, start: show.s, type: 'easterEgg' });
+                        } else if (!processedShows.some(ps => ps.id === show.mi)) {
+                            // Standardmeldung
+                            logger.info(`Ankündigung für Show: ${show.n}`);
+                            notification.sendNotification(show, stationId, config);
+                            processedShows.push({ id: show.mi, start: show.s, end: show.e });
+                        }
                     }
 
-                    // Nur Shows, die nicht verarbeitet wurden und noch kommen
-                    if (!processedShows.some(ps => ps.id === show.mi && ps.start === show.s)) {
-                        logger.info(`Ankündigung für Show: ${show.n}`);
-                        notification.sendNotification(show, stationId, config);
-                        processedShows.push({ id: show.mi, start: show.s, end: show.e });
-                    }
-
-                    // Verlängerungsprüfung
-                    const cachedShow = processedShows.find(ps => ps.id === show.mi);
-                    if (cachedShow && cachedShow.end !== show.e) { 
-                        // Nur wenn die Endzeit sich geändert hat, wird es als Verlängerung erkannt
-                        logger.info(`Verlängerung der Show ${show.n} erkannt.`);
+                    // Verlängerungsmeldungen nur bei gültiger neuer Endzeit
+                    const existingShow = processedShows.find(ps => ps.id === show.mi);
+                    if (existingShow && show.e && show.e !== existingShow.end && now.isBefore(showEndTime)) {
                         notification.sendExtension(show.n, show.m, stationId, show.e, config);
-                        cachedShow.end = show.e; // Aktualisiere die Endzeit im Cache
+                        existingShow.end = show.e;
+                        logger.info(`Verlängerung der Show ${show.n} erkannt und gemeldet.`);
                     }
 
-                    // Absagen
+                    // Absagemeldungen nur einmalig senden
                     if (!shows.some(s => s.mi === show.mi) && !cancelledShows.includes(show.mi)) {
-                        logger.info(`Absage der Show ${show.n} erkannt.`);
                         notification.sendCancellation(show.n, show.m, stationId, config);
                         cancelledShows.push(show.mi);
+                        logger.info(`Absage für Show: ${show.n} von ${show.m} gemeldet.`);
                     }
                 });
-
                 resolve();
             } catch (error) {
                 reject(error);
@@ -64,8 +76,8 @@ async function processShowsInParallel(showData, config, blacklist) {
     await cacheHelper.saveCache({
         ...cache,
         processedShows,
-        cancelledShows,
-        extendedShows
+        extendedShows,
+        cancelledShows
     });
 }
 

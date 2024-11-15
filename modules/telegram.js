@@ -1,8 +1,8 @@
 const fetch = require('node-fetch');
 const logger = require('./logger');
-const commands = require('./commands');  // Lade das commands-Modul
+const commands = require('./commands'); // Importiere das commands-Modul
 
-// Funktion zum Senden einer Telegram-Nachricht
+// Funktion zum Senden von Telegram-Nachrichten
 function sendTelegramMessage(message, config) {
     const telegramToken = config.telegramToken;
     const chatId = config.telegramChatId;
@@ -36,7 +36,7 @@ function sendTelegramMessage(message, config) {
         });
 }
 
-// Funktion zur ÃœberprÃ¼fung, ob der Absender der Administrator ist
+// Funktion zur Überprüfung, ob der Absender der Administrator ist
 function isAdmin(chatId, config) {
     return chatId === config.adminChatId;
 }
@@ -75,7 +75,7 @@ async function handleTelegramMessage(chatId, message, config) {
                     const response = await commands.toggleStation(chatId, stationId);
                     sendTelegramMessage(response, config);
                 } else {
-                    sendTelegramMessage('UngÃ¼ltige Station ID.', config);
+                    sendTelegramMessage('Ungültige Station ID.', config);
                 }
             } else {
                 sendTelegramMessage('Bitte eine Station ID angeben.', config);
@@ -95,7 +95,7 @@ async function handleTelegramMessage(chatId, message, config) {
                     const response = await commands.setNotificationTime(chatId, minutes);
                     sendTelegramMessage(response, config);
                 } else {
-                    sendTelegramMessage('UngÃ¼ltige Zeitangabe.', config);
+                    sendTelegramMessage('Ungültige Zeitangabe.', config);
                 }
             } else {
                 sendTelegramMessage('Bitte eine Benachrichtigungszeit angeben.', config);
