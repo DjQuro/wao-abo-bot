@@ -21,12 +21,16 @@ const defaultDjsStructure = {
 // Funktion zum Erstellen des Ordners, falls er nicht existiert
 async function ensureDataDir() {
     try {
-        await fs.mkdir(dataDir, { recursive: true }); // Erstellt den Ordner, wenn er nicht existiert
-        logger.info(`Datenverzeichnis ${dataDir} wurde erstellt oder existiert bereits.`);
+        const dirExists = await fs.access(dataDir).then(() => true).catch(() => false);
+        if (!dirExists) {
+            await fs.mkdir(dataDir, { recursive: true });
+            logger.info(`Datenverzeichnis ${dataDir} wurde erstellt.`);
+        }
     } catch (error) {
         logger.error(`Fehler beim Erstellen des Datenverzeichnisses: ${error.message}`);
     }
 }
+
 
 // Funktion zum Laden der JSON-Dateien
 async function loadJsonFile(filePath, defaultStructure) {

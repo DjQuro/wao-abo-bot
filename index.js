@@ -1,4 +1,6 @@
 const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
 const logger = require('./modules/logger');
 const configLoader = require('./modules/configLoader');
 const telegram = require('./modules/telegram');
@@ -13,6 +15,15 @@ async function init() {
         const config = await configLoader.loadConfig('./config/config.json');
         console.log("Telegram-Token: ", config.telegramToken);
         console.log("Chat-ID: ", config.telegramChatId);
+
+        // Datenverzeichnis erstellen, falls nicht vorhanden, und nur einmal prüfen
+        const dataDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir);
+            logger.info(`Datenverzeichnis ${dataDir} wurde erstellt.`);
+        } else {
+            logger.info(`Datenverzeichnis ${dataDir} existiert bereits.`);
+        }
 
         // Lade die Abonnements
         const subs = await loadSubsJson();
@@ -38,7 +49,6 @@ async function init() {
         logger.error(`Initialisierung fehlgeschlagen: ${error.message}`);
     }
 }
-
 
 async function main() {
     try {
