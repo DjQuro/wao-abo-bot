@@ -17,7 +17,7 @@ async function subscribeDJ(chatId, djName) {
 
     chatSubs.djs.push(djName);
     subs.chats[chatId] = chatSubs;
-    await saveJsonFile(path.join(__dirname, '../config/subs.json'), subs);
+    await saveJsonFile(path.join(__dirname, '../data/subs.json'), subs);
     return `Der DJ ${djName} wurde erfolgreich abonniert!`;
 }
 
@@ -31,7 +31,7 @@ async function unsubscribeDJ(chatId, djName) {
 
     chatSubs.djs = chatSubs.djs.filter(dj => dj !== djName);
     subs.chats[chatId] = chatSubs;
-    await saveJsonFile(path.join(__dirname, '../config/subs.json'), subs);
+    await saveJsonFile(path.join(__dirname, '../data/subs.json'), subs);
     return `Der DJ ${djName} wurde erfolgreich abbestellt.`;
 }
 
@@ -42,12 +42,12 @@ async function toggleStation(chatId, stationId) {
     if (chatStations.stations.includes(stationId)) {
         chatStations.stations = chatStations.stations.filter(station => station !== stationId);
         stations.chats[chatId] = chatStations;
-        await saveJsonFile(path.join(__dirname, '../config/stations.json'), stations);
+        await saveJsonFile(path.join(__dirname, '../data/stations.json'), stations);
         return `Sender ${stationId} wurde deaktiviert.`;
     } else {
         chatStations.stations.push(stationId);
         stations.chats[chatId] = chatStations;
-        await saveJsonFile(path.join(__dirname, '../config/stations.json'), stations);
+        await saveJsonFile(path.join(__dirname, '../data/stations.json'), stations);
         return `Sender ${stationId} wurde aktiviert.`;
     }
 }
