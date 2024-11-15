@@ -28,7 +28,7 @@ Thumbs.db
 # Cache ignorieren
 data/*.json
 
-# Config nicht überschreiben
+# Config nicht ï¿½berschreiben
 config/config.json
 
 # Ignoriere Dev-Tools
@@ -37,3 +37,4 @@ helper-scripts/wao-api-test/*
 # Ignoriere alte Botdaten
 botold/data/*
 botold/*.json
+start.bat
