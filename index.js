@@ -1,29 +1,19 @@
 const fetch = require('node-fetch');
-const fs = require('fs');
-const path = require('path');
 const logger = require('./modules/logger');
 const configLoader = require('./modules/configLoader');
-const telegram = require('./modules/telegram');
+const apiHelper = require('./modules/apiHelper');
 const showProcessor = require('./modules/showProcessor');
 const blacklistHandler = require('./modules/blacklistHandler');
-const apiHelper = require('./modules/apiHelper');
-let lastUpdateId = 0;
+const telegram = require('./modules/telegram');
 const { loadSubsJson } = require('./modules/cacheHelper');
+
+let lastUpdateId = 0;
 
 async function init() {
     try {
         const config = await configLoader.loadConfig('./config/config.json');
         console.log("Telegram-Token: ", config.telegramToken);
         console.log("Chat-ID: ", config.telegramChatId);
-
-        // Datenverzeichnis erstellen, falls nicht vorhanden, und nur einmal prüfen
-        const dataDir = path.join(__dirname, 'data');
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir);
-            logger.info(`Datenverzeichnis ${dataDir} wurde erstellt.`);
-        } else {
-            logger.info(`Datenverzeichnis ${dataDir} existiert bereits.`);
-        }
 
         // Lade die Abonnements
         const subs = await loadSubsJson();
@@ -40,7 +30,6 @@ async function init() {
         // Logge die Anzahl der Chats und DJs
         console.log(`Anzahl der hinterlegten Chats: ${chatCount}`);
         console.log(`Gesamtanzahl der abonnierten DJs: ${totalDJs}`);
-
         console.log(`Bot gestartet!`);
 
         // Starte den Befehlshandler
@@ -98,4 +87,3 @@ setInterval(main, 60 * 1000); // alle 60 Sekunden
 
 // Starte den Bot sofort
 init();
-main();
